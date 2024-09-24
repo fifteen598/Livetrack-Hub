@@ -12,7 +12,7 @@ A Python-based project using a Raspberry Pi to display the real-time location of
 - `pip3 install requests` - throws an error: "externally-managed-environment"
 - had to create and activate a **virtual environment** with `python3 -m venv myenv` & `source myenv/bin/activate`
 - installed packages: `pip install requests geopy numpy`
-> used a virtual environment to avoid potential issues with system-managed Python packages because the Raspberry Pi is a Debian-based system.
+> used a virtual environment to avoid potential issues with system-managed Python packages because the Raspberry Pi is a Debian-based system. This also creates a better control over dependencies in the future.
 
 ### 1.3 Enable SSH (Secure Shell) to access the Pi remotely/headlessly.
 - entered the pi configuration with `sudo raspi-config`
@@ -21,7 +21,7 @@ A Python-based project using a Raspberry Pi to display the real-time location of
 
 **1.3.1
 On local machine** 
-- to access pi remotely, must input `ssh user@ip`
+- accessed pi remotely by running `ssh user@ip`
 - enter requested password
 
 ## 2.0 | Enabling Google Maps API
@@ -41,10 +41,18 @@ On local machine**
 ## 4.0 | Testing Functions & API Calls
 > after securely configuring the api key, we are able to use it to make API calls. Here, I just tested it by writing some functions that will be similarly used for our project.
 ### 4.1 Test: Fetch (get_coords & get_addr)
-- Used *Geocoding API* to convert any given address into a tuple of coordinates 
+- Used *Geocoding API* to convert any given address into a string of coordinates 
 - Must use making HTTP request using package `requests` in script
 - Pass address along with API key and handled the response that contains coordinates 'results' .json
+**4.1.1
+Refactored get_coords & get_addr**
+- modified the `get_addr` function to accept individual latitude and longitude values.
+- learned that tuples can be easily unpacked by adding a * when passing to a function.
+- note: I wanted to use tuples rather string because it allows for better continuity and flexibility when working with coordinates.
 ### 4.2 Test: Calculating Distance
+- Integrated google distance matrix API for calculating distance & duration between two coordinates. Added two new functions `get_distance` and `get_duration`.
+- geopy can also calculate distance but it's calculations are more used to calculate direct distances between two points in a straight line. this will be useful for geofencing in the future
+
 
 
 
