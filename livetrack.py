@@ -1,12 +1,10 @@
 import os
 import requests
 from geopy import distance
+import Coordinates as c
+import Addresses as a
 
 key = os.getenv('GOOGLE_API')
-
-campus_address = '1845 Fairmount St, Wichita, United States'
-campus_coordinates = (37.7165348,-97.2959726)
-home = (37.688682, -97.336553)
 
 GEOCODE = "https://maps.googleapis.com/maps/api/geocode/json"
 DISTMATRIX = "https://maps.googleapis.com/maps/api/distancematrix/json"
@@ -65,16 +63,20 @@ def get_duration(origin, destination):
         else:
                 print("ERROR: could not get duration.")
 
-                
-#get_coords(campus_address)
-#get_addr(*campus_coordinates)
-#get_addr(*home)
-#get_coords(home)
+def geofence(origin, destination, radius=100):
+        distance_meters = distance.distance(origin, destination).meters
+        if distance_meters <= radius:
+                return True
+        return False
 
-# get_distance(campus_coordinates, home)
-# get_duration(campus_coordinates, home)
 
-# print(distance.distance(campus_coordinates, home).miles)
+#print(get_distance(c.campus, c.home)) # this is using DISTANCE MATRIX api to find approx. distance
+#print(get_duration(c.campus, c.home))
 
-print(get_addr(*home))
+# print(distance.distance(campus_coordinates, home).miles) # this is using geopy to calculate distance in a straight line
+
+# print(get_addr(*c.home)) # returns address as a string 
+# print(get_addr(*c.campus)) # returns address as a string
+
+# print(f'Converting {a.campus} into coordinates: {get_coords(a.campus)}') # returns coordinates as tuple
 
