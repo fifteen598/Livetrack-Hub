@@ -8,6 +8,7 @@ import Coordinates as c
 import livetrack
 from pathlib import Path
 from tkinter import Tk, Canvas, Button, PhotoImage
+from tkinter.font import Font
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"C:\Users\adrie\OneDrive\Desktop\SD1\Livetrack-Hub\assets\frame0")
@@ -22,8 +23,10 @@ class LiveTrackHub:
         self.setup_window()
         self.setup_canvas()
         self.setup_images()
+        self.setup_status_box()
         self.setup_buttons()
         self.window.resizable(False, False)
+        self.update_status() 
         self.window.mainloop()
 
     def setup_window(self):
@@ -70,6 +73,33 @@ class LiveTrackHub:
         self.canvas.create_image(150.0, 488.0, image=self.images["image_8"])
         self.canvas.create_image(150.0, 832.0, image=self.images["image_9"])
         self.canvas.create_rectangle(24.0, 99.0, 275.0, 101.00002596456417, fill="#282C38", outline="")
+
+    def setup_status_box(self):
+        self.status_var = StringVar()
+        self.status_label = Label(
+            self.window,
+            textvariable=self.status_var,
+            bg="#282C38",
+            fg="#FFFFFF",
+            font=("Poppins", 14))
+        self.status_label.place(x=608, y=381, width=166, height=62)
+
+    def update_status(self):
+        """Update the status dynamically."""
+        importlib.reload(c)  # Reload coordinates module to get updated data
+
+        home_coords = c.home
+        campus_coordinates = c.campus
+        my_coordinates = c.me
+
+        if livetrack.geofence(campus_coordinates, my_coordinates):
+            self.status_var.set("is Home")
+            self.status_label.config(bg="#246CF9")
+        else:
+            self.status_var.set("is Away")
+            self.status_label.config(bg="#FA2256")
+
+        self.window.after(5000, self.update_status)
 
     def setup_buttons(self):
         self.buttons = [
