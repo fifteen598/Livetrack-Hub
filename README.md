@@ -65,7 +65,7 @@ Refactored get_coords & get_addr**
 
 ## 5.0 | GUI Setup
 #### 5.1 Download Tkinter as Framework
-> Using [tkdocs]https://tkdocs.com/tutorial/onepage.html, installed tkinter and created a basic GUI just to test feasibility. Using static coordinates and campus coordinates as a temporary geofence.
+> Using https://tkdocs.com/tutorial/onepage.html, installed tkinter and created a basic GUI just to test feasibility. Using static coordinates and campus coordinates as a temporary geofence.
 - Tkinter is already installed in the python std library. However, still verified by running script:
  ```python
  import tkinter
@@ -75,11 +75,25 @@ Refactored get_coords & get_addr**
 - In gui.py, created a function that calls the tkinter library and it's tools.
 - Most things performed in this step are trial-and-error, nothing is set and stone for our future GUI. 
 #### 5.3 Importlib
-- Couldn't figure out why the update_status functions wasn't working - was not changing statuses regardless of the coordinates / distance.
+- Couldn't figure out why the `update_status` functions wasn't working - was not changing statuses regardless of the coordinates / distance.
 - Figured out that we can use the `importlib.reload()` function from the `importlib` library to ensure our coordinates are being refreshed.
 - This is especially good for later since we will be using dynamic real-time data and not static manual data.
-#### 5.4 Scaling the GUI for x Users
-#### 5.5 Optimizing Data Handling
+#### 5.4 Transition to Figma + Tkinter Designer
+- Scrapped the old GUI due to aesthetic limitations and decided to design the new GUI using *Figma* for the design and *Tkinter Designer* to convert design into functional Tkinter assets.
+> Resource: https://www.figma.com/ - A beautifully designed website that allows developers to bring design and developing togther with no boundaries on creativity. 
+> Resource: https://github.com/ParthJadhav/Tkinter-Designer - Uses Figma API to analyze a design file to create the respective code and assets needed for the GUI. Assists in speeding up the GUI development process in python.
+- Created the new layout in Figma, focusing on creating a cleaner and much more visiually appealing interface.
+- The design includes rounded rectangles, modern typography, and aligned layout for better readability and user experience.
+#### 5.5 Tkinter Designer Conversion Process
+- Once completed the design. Used Tkinter Designer to import and generate a Tkinter based layout from the assets from said design. This includes boxes, text fields, buttons, etc.
+- Refactored the generated code to make it more readable and maintainable, breaking it down into sections that can be easily integrated for future parts of the project.
+#### 5.6 Integrating Old Functionality
+- The old GUI functioanlity which included real-time location updates, geofencing, and coordinate based status updates needed to be applied to the new GUI so I could see if there were any issues in the process.
+- Verified all dynamic features such as `update_status` function works in new design
+
+#### 5.7 Scaling the GUI for x Users
+
+#### 5.8 Optimizing Data Handling
 
 
 
