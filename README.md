@@ -78,6 +78,10 @@ Refactored get_coords & get_addr**
 - Couldn't figure out why the update_status functions wasn't working - was not changing statuses regardless of the coordinates / distance.
 - Figured out that we can use the `importlib.reload()` function from the `importlib` library to ensure our coordinates are being refreshed.
 - This is especially good for later since we will be using dynamic real-time data and not static manual data.
+#### 5.4 Scaling the GUI for x Users
+#### 5.5 Optimizing Data Handling
+
+
 
 
 
