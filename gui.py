@@ -1,5 +1,5 @@
 # https://tkdocs.com/tutorial/onepage.html
-# https://github.com/ParthJadhav/Tkinter-Designer
+# https://github.com/ParthJadhav/Tkinter-Designer 1106 x 132
 
 from tkinter import *
 from tkinter import ttk
@@ -9,9 +9,10 @@ import livetrack
 from pathlib import Path
 from tkinter import Tk, Canvas, Button, PhotoImage
 from tkinter.font import Font
+from tkintermapview import TkinterMapView
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path(r"C:\Users\adrie\OneDrive\Desktop\SD1\Livetrack-Hub\assets\frame0")
+ASSETS_PATH = OUTPUT_PATH / 'assets' / 'frame0'
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
@@ -23,11 +24,19 @@ class LiveTrackHub:
         self.setup_window()
         self.setup_canvas()
         self.setup_images()
+        self.setup_clock()
         self.setup_status_box()
         self.setup_buttons()
         self.window.resizable(False, False)
         self.update_status() 
-        self.window.mainloop()
+        self.map_widget = TkinterMapView(self.window, width=307, height=346, corner_radius=20)
+        self.map_widget.place(x=1106, y=132)  # Adjust x and y to place the map widget at the desired location
+        self.map_widget.set_position(c.me[0], c.me[1])
+        self.map_widget.set_marker(c.me[0], c.me[1], text="My Location")
+        self.map_widget.set_position(c.home[0], c.home[1])
+        self.map_widget.set_marker(c.home[0], c.home[1], text="Home")
+        self.window.mainloop()  
+
 
     def setup_window(self):
         self.window.geometry("1440x900")
@@ -45,6 +54,11 @@ class LiveTrackHub:
             relief="ridge"
         )
         self.canvas.place(x=0, y=0)
+
+    def reposition(self):
+        self.map_widget.set_position(c.me[0], c.me[1])
+        self.map_widget.set_marker(c.me[0], c.me[1], text="My Location")
+        
 
     def setup_images(self):
         self.images = {
@@ -74,33 +88,6 @@ class LiveTrackHub:
         self.canvas.create_image(150.0, 832.0, image=self.images["image_9"])
         self.canvas.create_rectangle(24.0, 99.0, 275.0, 101.00002596456417, fill="#282C38", outline="")
 
-    def setup_status_box(self):
-        self.status_var = StringVar()
-        self.status_label = Label(
-            self.window,
-            textvariable=self.status_var,
-            bg="#282C38",
-            fg="#FFFFFF",
-            font=("Poppins", 14))
-        self.status_label.place(x=608, y=381, width=166, height=62)
-
-    def update_status(self):
-        """Update the status dynamically."""
-        importlib.reload(c)  # Reload coordinates module to get updated data
-
-        home_coords = c.home
-        campus_coordinates = c.campus
-        my_coordinates = c.me
-
-        if livetrack.geofence(campus_coordinates, my_coordinates):
-            self.status_var.set("is Home")
-            self.status_label.config(bg="#246CF9")
-        else:
-            self.status_var.set("is Away")
-            self.status_label.config(bg="#FA2256")
-
-        self.window.after(5000, self.update_status)
-
     def setup_buttons(self):
         self.buttons = [
             {"image": "button_1.png", "hover": "button_hover_1.png", "x": 26.0, "y": 720.0, "command": lambda: print("button_1 clicked")},
@@ -109,7 +96,7 @@ class LiveTrackHub:
             {"image": "button_4.png", "hover": "button_hover_4.png", "x": 26.0, "y": 290.0, "command": lambda: print("button_4 clicked")},
             {"image": "button_5.png", "hover": "button_hover_5.png", "x": 26.0, "y": 234.0, "command": lambda: print("button_5 clicked")},
             {"image": "button_6.png", "hover": "button_hover_6.png", "x": 26.0, "y": 178.0, "command": lambda: print("button_6 clicked")},
-            {"image": "button_7.png", "hover": "button_hover_7.png", "x": 26.0, "y": 122.0, "command": lambda: print("button_7 clicked")},
+            {"image": "button_7.png", "hover": "button_hover_7.png", "x": 26.0, "y": 122.0, "command": self.reposition},
         ]
 
         for button in self.buttons:
@@ -132,6 +119,58 @@ class LiveTrackHub:
         button.place(x=button_info["x"], y=button_info["y"], width=249.0, height=44.0)
         button.bind('<Enter>', lambda e, b=button: b.config(image=b.hover_image))
         button.bind('<Leave>', lambda e, b=button: b.config(image=b.image))
+
+
+    def setup_status_box(self):
+        self.status_var = StringVar()
+        self.status_label = Label(
+            self.window,
+            textvariable=self.status_var,
+            bg="#282C38",
+            fg="#FFFFFF",
+            font=("Poppins", 14))
+        self.status_label.place(x=608, y=381, width=166, height=62)
+
+
+    def update_status(self):
+        """Update the status dynamically."""
+        importlib.reload(c)  # Reload coordinates module to get updated data
+
+        home_coords = c.home
+        campus_coordinates = c.campus
+        my_coordinates = c.me
+
+        if livetrack.geofence(campus_coordinates, my_coordinates):
+            self.status_var.set("is Home")
+            self.status_label.config(bg="#246CF9")
+        else:
+            self.status_var.set("is Away")
+            self.status_label.config(bg="#FA2256")
+
+        self.window.after(5000, self.update_status)
+    
+    def setup_clock(self):
+        self.clock_label = Label(
+            font=("Poppins", 14),
+            bg="#1D1F25",
+            fg="#FFFFFF")
+        self.clock_label.place(x=1180, y=50)
+
+        self.date_label = Label(
+            font=("Poppins", 14),
+            bg="#1D1F25",
+            fg="#FFFFFF")
+        self.date_label.place(x=1280, y=50)
+        self.update_clock()
+    
+    def update_clock(self):
+        import time
+        current_time = time.strftime("%I:%M %p")
+        current_date = time.strftime("%a, %b %d")
+        self.clock_label.config(text=current_time)
+        self.date_label.config(text=current_date)
+        self.window.after(10000, self.update_clock)
+
 
 if __name__ == "__main__":
     LiveTrackHub()
