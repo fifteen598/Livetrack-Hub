@@ -47,7 +47,7 @@ class Application:
             "body": PhotoImage(file=self.relative_to_assets("body.png")),
             "dashboard": PhotoImage(file=self.relative_to_assets("dashboard.png")),
             "status_panel": PhotoImage(file=self.relative_to_assets("status_panel.png")),
-            "logo": PhotoImage(file=self.relative_to_assets("logo.png")),
+            #"logo": PhotoImage(file=self.relative_to_assets("logo.png")),
             "button_panel": PhotoImage(file=self.relative_to_assets("button_panel.png")),
             "button_1": PhotoImage(file=self.relative_to_assets("button_1.png")),
             "button_hover_1": PhotoImage(file=self.relative_to_assets("button_hover_1.png")),
@@ -71,8 +71,8 @@ class Application:
         self.canvas.create_image(690.0, 461.0, image=self.images["body"])
         self.canvas.create_image(857.0, 64.999, image=self.images["dashboard"])
         self.canvas.create_image(1259.0, 503.0, image=self.images["status_panel"])
-        self.canvas.create_image(137.0, 106.0, image=self.images["logo"])
-        self.canvas.create_image(137.0, 555.0, image=self.images["button_panel"])
+        #self.canvas.create_image(137.0, 106.0, image=self.images["logo"])
+        self.canvas.create_image(137.0, 450.0, image=self.images["button_panel"])
         self.canvas.create_image(1259.0, 283.0, image=self.images["isAway_1"])
         self.canvas.create_image(1259.0, 413.0, image=self.images["isHome_2"])
         self.canvas.create_image(1259.0, 543.0, image=self.images["isHome_3"])
@@ -82,11 +82,11 @@ class Application:
     def create_buttons(self):
         # Creating buttons using a helper method
         buttons_config = [
-            ("button_1", "button_hover_1", (25.0, 259.0, 229.0, 69.0), "Button 1 clicked"),
-            ("button_2", "button_hover_2", (27.0, 367.0, 229.0, 69.0), "Button 2 clicked"),
-            ("button_3", "button_hover_3", (27.0, 473.0, 229.0, 69.0), "Button 3 clicked"),
-            ("button_4", "button_hover_4", (27.0, 579.0, 227.0, 69.0), "Button 4 clicked"),
-            ("button_5", "button_hover_5", (301.0, 811.0, 790.0, 55.0), "Button 5 clicked"),
+            ("button_1", "button_hover_1", (27.0, 259.0, 218.0, 58.0), "Button 1 clicked"),
+            ("button_2", "button_hover_2", (27.0, 367.0, 218.0, 58.0), "Button 2 clicked"),
+            ("button_3", "button_hover_3", (27.0, 473.0, 218.0, 58.0), "Button 3 clicked"),
+            ("button_4", "button_hover_4", (27.0, 579.0, 218.0, 58.0), "Button 4 clicked"),
+            ("button_5", "button_hover_5", (301.0, 811.0, 777.0, 42.0), "Button 5 clicked"),
         ]
         for button_name, hover_name, geometry, command_msg in buttons_config:
             self.create_hover_button(button_name, hover_name, geometry, command_msg)
