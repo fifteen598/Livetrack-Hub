@@ -10,9 +10,11 @@ from pathlib import Path
 from tkinter import Tk, Canvas, Button, PhotoImage
 from tkinter.font import Font
 from tkintermapview import TkinterMapView
+import live_flask
+import threading
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / 'assets' / 'frame0'
+ASSETS_PATH = OUTPUT_PATH / 'assets' / 'frame0_b'
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
@@ -21,8 +23,8 @@ class LiveTrackHub:
     def __init__(self):
         self.window = Tk()
         self.window.title("LiveTrack Hub")
-        self.setup_window()
-        self.setup_canvas()
+        self.setup_window() #
+        self.setup_canvas() #
         self.setup_images()
         self.setup_clock()
         self.setup_status_box()
@@ -31,11 +33,9 @@ class LiveTrackHub:
         self.update_status() 
         self.map_widget = TkinterMapView(self.window, width=307, height=346, corner_radius=20)
         self.map_widget.place(x=1106, y=132)  # Adjust x and y to place the map widget at the desired location
-        self.map_widget.set_position(c.me[0], c.me[1])
-        self.map_widget.set_marker(c.me[0], c.me[1], text="My Location")
-        self.map_widget.set_position(c.home[0], c.home[1])
-        self.map_widget.set_marker(c.home[0], c.home[1], text="Home")
-        self.window.mainloop()  
+        self.map_widget.set_position(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1])
+        self.map_widget.set_marker(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1], text="My Location")
+        self.window.mainloop()
 
 
     def setup_window(self):
@@ -56,8 +56,8 @@ class LiveTrackHub:
         self.canvas.place(x=0, y=0)
 
     def reposition(self):
-        self.map_widget.set_position(c.me[0], c.me[1])
-        self.map_widget.set_marker(c.me[0], c.me[1], text="My Location")
+        self.map_widget.set_position(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1])
+        self.map_widget.set_marker(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1], text="My Location")
         
 
     def setup_images(self):
@@ -136,9 +136,8 @@ class LiveTrackHub:
         """Update the status dynamically."""
         importlib.reload(c)  # Reload coordinates module to get updated data
 
-        home_coords = c.home
-        campus_coordinates = c.campus
-        my_coordinates = c.me
+        campus_coordinates = c.campus_coordinates
+        my_coordinates = live_flask.fetch_coordinates('Adrien')
 
         if livetrack.geofence(campus_coordinates, my_coordinates):
             self.status_var.set("is Home")
@@ -171,6 +170,9 @@ class LiveTrackHub:
         self.date_label.config(text=current_date)
         self.window.after(10000, self.update_clock)
 
+def run_flask():
+    live_flask.app.run(host='0.0.0.0', port=5000)
 
 if __name__ == "__main__":
-    LiveTrackHub()
+    gui_thread = threading.Thread(target=LiveTrackHub())
+
