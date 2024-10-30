@@ -12,16 +12,27 @@ import livetrack
 class Application:
     def __init__(self, root):
         self.root = root
+        self.user_names = [] # List of names
+        self.status_labels = [] # List of status labels
+        self.get_user_names()
         self.setup_window()
         self.setup_canvas()
         self.load_images()
         self.create_buttons()
         self.setup_clock()
         self.create_labels_with_transparency()
-        self.map_widget = TkinterMapView(self.root, width=779, height=659, corner_radius=20)
-        self.map_widget.place(x=301, y=132)  # Adjust x and y to place the map widget at the desired location
+        self.map_widget = TkinterMapView(self.root, width=739, height=619, corner_radius=20)
+        self.map_widget.place(x=321, y=152)  # Adjust x and y to place the map widget at the desired location
         self.map_widget.set_position(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1])
         self.map_widget.set_marker(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1], text="My Location")
+
+    def get_user_names(self):
+        for i in range(5):
+            name = input(f"Enter name for person {i+1}: ")
+            if name: 
+                self.user_names.append(name)
+            else:
+                break
 
     def setup_window(self):
         self.root.geometry("1440x900")
@@ -47,7 +58,6 @@ class Application:
             "body": PhotoImage(file=self.relative_to_assets("body.png")),
             "dashboard": PhotoImage(file=self.relative_to_assets("dashboard.png")),
             "status_panel": PhotoImage(file=self.relative_to_assets("status_panel.png")),
-            #"logo": PhotoImage(file=self.relative_to_assets("logo.png")),
             "button_panel": PhotoImage(file=self.relative_to_assets("button_panel.png")),
             "button_1": PhotoImage(file=self.relative_to_assets("button_1.png")),
             "button_hover_1": PhotoImage(file=self.relative_to_assets("button_hover_1.png")),
@@ -58,12 +68,12 @@ class Application:
             "button_4": PhotoImage(file=self.relative_to_assets("button_4.png")),
             "button_hover_4": PhotoImage(file=self.relative_to_assets("button_hover_4.png")),
             "button_5": PhotoImage(file=self.relative_to_assets("button_5.png")),
-            "button_hover_5": PhotoImage(file=self.relative_to_assets("button_hover_5.png")),
-            "isAway_1": PhotoImage(file=self.relative_to_assets("isAway_1.png")),
-            "isHome_2": PhotoImage(file=self.relative_to_assets("isHome_2.png")),
-            "isHome_3": PhotoImage(file=self.relative_to_assets("isHome_3.png")),
-            "isHome_4": PhotoImage(file=self.relative_to_assets("isHome_4.png")),
-            "isHome_5": PhotoImage(file=self.relative_to_assets("isHome_5.png"))
+            "button_hover_5": PhotoImage(file=self.relative_to_assets("button_hover_5.png"))
+            # "isAway_1": PhotoImage(file=self.relative_to_assets("isAway_1.png")),
+            # "isHome_2": PhotoImage(file=self.relative_to_assets("isHome_2.png")),
+            # "isHome_3": PhotoImage(file=self.relative_to_assets("isHome_3.png")),
+            # "isHome_4": PhotoImage(file=self.relative_to_assets("isHome_4.png")),
+            # "isHome_5": PhotoImage(file=self.relative_to_assets("isHome_5.png"))
 
         }
         # Creating canvas images
@@ -71,13 +81,12 @@ class Application:
         self.canvas.create_image(690.0, 461.0, image=self.images["body"])
         self.canvas.create_image(857.0, 64.999, image=self.images["dashboard"])
         self.canvas.create_image(1259.0, 503.0, image=self.images["status_panel"])
-        #self.canvas.create_image(137.0, 106.0, image=self.images["logo"])
         self.canvas.create_image(137.0, 450.0, image=self.images["button_panel"])
-        self.canvas.create_image(1259.0, 283.0, image=self.images["isAway_1"])
-        self.canvas.create_image(1259.0, 413.0, image=self.images["isHome_2"])
-        self.canvas.create_image(1259.0, 543.0, image=self.images["isHome_3"])
-        self.canvas.create_image(1259.0, 673.0, image=self.images["isHome_4"])
-        self.canvas.create_image(1259.0, 802.0, image=self.images["isHome_5"])
+        # self.canvas.create_image(1259.0, 283.0, image=self.images["isAway_1"])
+        # self.canvas.create_image(1259.0, 413.0, image=self.images["isHome_2"])
+        # self.canvas.create_image(1259.0, 543.0, image=self.images["isHome_3"])
+        # self.canvas.create_image(1259.0, 673.0, image=self.images["isHome_4"])
+        # self.canvas.create_image(1259.0, 802.0, image=self.images["isHome_5"])
 
     def create_buttons(self):
         # Creating buttons using a helper method
@@ -105,12 +114,25 @@ class Application:
         button.bind('<Enter>', lambda e: button.config(image=self.images[hover_name]))
         button.bind('<Leave>', lambda e: button.config(image=self.images[button_name]))
 
+    def create_status_labels(self):
+        y_positions = [283.0, 413.0, 543.0, 673.0, 802.0]
+        for index, name in enumerate(self.user_names):
+            if index < 5: 
+                status_label = self.canvas.create_image(1259.0, y_positions[index], image=self.images["isAway_{}".format(index+1)]) 
+                self.status_labels.append(status_label)
+                self.canvas.create_text(
+                    1164, y_positions[index] - 30,
+                    text = name,
+                    font = ("Poppins", 14),
+                    fill="#FFFFFF"
+                )
+
     def create_labels_with_transparency(self):
         # Adding text labels using canvas with transparent background
         labels_config = []
         for text, x, y in labels_config:
             self.canvas.create_text(
-                x, y, text=text, font=("Poppins", 14), fill="#000000")
+                x, y, text=text, font=("Poppins", 24), fill="#000000")
 
     def relative_to_assets(self, path: str) -> Path:
         return self.assets_path / Path(path)

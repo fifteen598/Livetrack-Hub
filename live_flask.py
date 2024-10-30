@@ -16,7 +16,7 @@ def update_location(): # this is the data that is sent from the client to the se
     name = data.get('name')
     lat = data.get('latitude')
     long = data.get('longitude')
-    upsert_record(name, lat, long) # takes the data it receives and updates the record in the database
+    upsert_record(name, lat, long) # takes the data it receives and updates the record in   the database
     return "Updated Location", 200 
 
 def upsert_record(name, lat, long): # this function will either create a new record or update an existing record in the database
