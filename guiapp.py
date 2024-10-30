@@ -7,11 +7,13 @@ import threading
 import importlib
 import Coordinates as c
 import livetrack
+import requests  # Add for sharing toggle HTTP requests
 
 
 class Application:
     def __init__(self, root):
         self.root = root
+        self.is_sharing = True  # Track sharing state
         self.setup_window()
         self.setup_canvas()
         self.load_images()
@@ -22,6 +24,8 @@ class Application:
         self.map_widget.place(x=301, y=132)  # Adjust x and y to place the map widget at the desired location
         self.map_widget.set_position(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1])
         self.map_widget.set_marker(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1], text="My Location")
+         # Set up periodic map updates
+        self.root.after(5000, self.update_map_position)
 
     def setup_window(self):
         self.root.geometry("1440x900")
@@ -63,7 +67,12 @@ class Application:
             "isHome_2": PhotoImage(file=self.relative_to_assets("isHome_2.png")),
             "isHome_3": PhotoImage(file=self.relative_to_assets("isHome_3.png")),
             "isHome_4": PhotoImage(file=self.relative_to_assets("isHome_4.png")),
-            "isHome_5": PhotoImage(file=self.relative_to_assets("isHome_5.png"))
+            "isHome_5": PhotoImage(file=self.relative_to_assets("isHome_5.png")),
+            # new sharing toggle button images
+            "sharing_on": PhotoImage(file=self.relative_to_assets("sharing_on.png")),
+            "sharing_off": PhotoImage(file=self.relative_to_assets("sharing_off.png")),
+            "sharing_on_hover": PhotoImage(file=self.relative_to_assets("sharing_on_hover.png")),
+            "sharing_off_hover": PhotoImage(file=self.relative_to_assets("sharing_off_hover.png"))
 
         }
         # Creating canvas images
@@ -87,11 +96,14 @@ class Application:
             ("button_3", "button_hover_3", (27.0, 473.0, 218.0, 58.0), "Button 3 clicked"),
             ("button_4", "button_hover_4", (27.0, 579.0, 218.0, 58.0), "Button 4 clicked"),
             ("button_5", "button_hover_5", (301.0, 811.0, 777.0, 42.0), "Button 5 clicked"),
+            # new sharing button
+            ("sharing_on", "sharing_on_hover", (27.0, 685.0, 218.0, 58.0), "toggle_sharing")
         ]
         for button_name, hover_name, geometry, command_msg in buttons_config:
             self.create_hover_button(button_name, hover_name, geometry, command_msg)
 
     def create_hover_button(self, button_name, hover_name, geometry, command_msg):
+        command = self.toggle_sharing if command_msg == "toggle_sharing" else lambda: print(command_msg)
         button = Button(
             image=self.images[button_name],
             borderwidth=0,
@@ -102,9 +114,47 @@ class Application:
         button.place(x=geometry[0], y=geometry[1], width=geometry[2], height=geometry[3])
 
         # Event bindings for hover effects
-        button.bind('<Enter>', lambda e: button.config(image=self.images[hover_name]))
-        button.bind('<Leave>', lambda e: button.config(image=self.images[button_name]))
+        if command_msg == "toggle_sharing":
+            button.bind('<Enter>', lambda e: button.config(
+                image=self.images["sharing_on_hover" if self.is_sharing else "sharing_off_hover"]))
+            button.bind('<Leave>', lambda e: button.config(
+                image=self.images["sharing_on" if self.is_sharing else "sharing_off"]))
+        else:
+            button.bind('<Enter>', lambda e: button.config(image=self.images[hover_name]))
+            button.bind('<Leave>', lambda e: button.config(image=self.images[button_name]))
 
+    # new methods
+    def toggle_sharing(self):
+        """Toggle location sharing"""
+        response = requests.post(f'http://localhost:5000/toggle_sharing/Adrien')
+        if response.status_code == 200:
+            self.is_sharing = response.json()['sharing']
+            # Update button image based on state
+            button = self.find_button_by_geometry((27.0, 685.0, 218.0, 58.0))
+            if button:
+                button.config(
+                    image=self.images["sharing_on" if self.is_sharing else "sharing_off"]
+                )
+
+    def find_button_by_geometry(self, geometry):
+        """Helper method to find button by its geometry"""
+        for widget in self.root.winfo_children():
+            if isinstance(widget, Button):
+                if (widget.winfo_x(), widget.winfo_y(), 
+                    widget.winfo_width(), widget.winfo_height()) == geometry:
+                    return widget
+        return None
+
+    def update_map_position(self):
+        """Update map marker position"""
+        try:
+            coordinates = live_flask.fetch_coordinates('Adrien')
+            if coordinates:
+                self.map_widget.set_position(coordinates[0], coordinates[1])
+                self.map_widget.set_marker(coordinates[0], coordinates[1], text="My Location")
+        except Exception as e:
+            print(f"Error updating map: {e}")
+    
     def create_labels_with_transparency(self):
         # Adding text labels using canvas with transparent background
         labels_config = []
