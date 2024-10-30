@@ -1,3 +1,5 @@
 __pycache__/ 
 test1.py
 test2.py
+.idea/
+.DS_Store

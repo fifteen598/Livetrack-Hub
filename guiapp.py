@@ -14,7 +14,6 @@ class Application:
         self.root = root
         self.user_names = [] # List of names
         self.status_labels = [] # List of status labels
-        self.get_user_names()
         self.setup_window()
         self.setup_canvas()
         self.load_images()
@@ -25,14 +24,6 @@ class Application:
         self.map_widget.place(x=321, y=152)  # Adjust x and y to place the map widget at the desired location
         self.map_widget.set_position(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1])
         self.map_widget.set_marker(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1], text="My Location")
-
-    def get_user_names(self):
-        for i in range(5):
-            name = input(f"Enter name for person {i+1}: ")
-            if name: 
-                self.user_names.append(name)
-            else:
-                break
 
     def setup_window(self):
         self.root.geometry("1440x900")
@@ -167,8 +158,8 @@ class Application:
         # Schedule next update
         self.root.after(60000, self.update_clock)
 
-def run_flask():
-    live_flask.app.run(host='0.0.0.0', port=5000)
+#def run_flask():
+    #live_flask.app.run(host='0.0.0.0', port=5000)
 
 def run_gui():
     window = Tk()
@@ -176,9 +167,9 @@ def run_gui():
     window.mainloop()
 
 if __name__ == "__main__":
-    flask_thread = threading.Thread(target=run_flask)
+    #flask_thread = threading.Thread(target=run_flask)
     gui_thread = threading.Thread(target=run_gui)
-    flask_thread.start()
+    #flask_thread.start()
     gui_thread.start()
     gui_thread.join()
-    flask_thread.join()
+    #flask_thread.join()

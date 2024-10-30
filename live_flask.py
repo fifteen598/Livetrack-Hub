@@ -67,7 +67,9 @@ def fetch_coordinates(name): # specific record call
             return (lat, long)
 
 def run_flask():
+    print("Running Flask...")
     app.run(host='0.0.0.0' , port=5000)
+
 
 def main():
     while True:
