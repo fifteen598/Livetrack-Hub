@@ -66,13 +66,15 @@ def fetch_coordinates(name): # specific record call
             long = record.get('long')
             return (lat, long)
 
+
 def run_flask():
     print("Running Flask...")
-    app.run(host='0.0.0.0' , port=5000)
+    app.run(host='0.0.0.0' , port=5000) # we can access this server remotely 
 
-
+# this is where we will be calling the functions to update, fetch, and display the records
 def main():
     while True:
+        print("Returned records:")
         print(fetch_coordinates('Adrien'))
         time.sleep(10)
 
