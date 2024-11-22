@@ -108,7 +108,8 @@ Refactored get_coords & get_addr**
 - Added new icons for "isHome" and "isAway" statuses, which change dynamically depending on the user's location.
 - Labels are updated in real-time as new location data is received from the MQTT broker.
 
-## 7.0 | MQTT Integration
+## 7.0 | MQTT Integration _(work in progress)_
+> 7.0 is not implemented yet
 #### 7.1 Setting up Mosquitto
 - Installed Mosquitto MQTT broker on the Raspberry Pi to handle messaging between devices.
 - Configured Mosquitto to listen on port **1883** for incoming messages from mobile devices.
@@ -137,3 +138,6 @@ Refactored get_coords & get_addr**
 #### 8.3 Mobile App Integration
 - Plan on continuing to develop a simple mobile app for publishing GPS data instead of using third-party apps.
 - The app will provide better control over the data and allow for additional features like geofence notifications and manual status updates.
+
+#### 8.4 Explore MQQT Option
+- A more practical solution if the application development does not follow through with our project.
