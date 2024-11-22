@@ -88,6 +88,52 @@ Refactored get_coords & get_addr**
 - The old GUI functioanlity which included real-time location updates, geofencing, and coordinate based status updates needed to be applied to the new GUI so I could see if there were any issues in the process.
 - Verified all dynamic features such as `update_status` function works in new design
 
-#### 5.7 Scaling the GUI for x Users
+## 6.0 | User Interaction and Real-Time Updates
+#### 6.1 Dynamic User Input
+- Added functionality for the app to prompt users to enter names for tracking purposes. The user can enter up to 5 names, which will be displayed on the GUI.
+- This allows for dynamic addition of users and provides better flexibility in the tracking system.
 
-#### 5.8 Optimizing Data Handling
+#### 6.2 Real-Time Location Display
+- Integrated **TkinterMapView** to display real-time locations on the GUI.
+- Used `live_flask.fetch_coordinates()` to retrieve the coordinates of the tracked individuals and update their position on the map.
+- Added markers on the map for each user, with their name displayed for easy identification.
+
+#### 6.3 Status Updates with MQTT
+- Transitioned from Flask to **Mosquitto** as an MQTT broker for real-time data updates.
+- Each mobile device publishes its GPS coordinates to the broker, and the Raspberry Pi GUI subscribes to receive these updates instantly.
+- Removed Flask server from the project as its functionality was deemed redundant.
+
+#### 6.4 Real-Time Status Indicators
+- Created visual status indicators for each user (e.g., "isAway" or "isHome") based on their current location relative to predefined geofences.
+- Added new icons for "isHome" and "isAway" statuses, which change dynamically depending on the user's location.
+- Labels are updated in real-time as new location data is received from the MQTT broker.
+
+## 7.0 | MQTT Integration
+#### 7.1 Setting up Mosquitto
+- Installed Mosquitto MQTT broker on the Raspberry Pi to handle messaging between devices.
+- Configured Mosquitto to listen on port **1883** for incoming messages from mobile devices.
+
+#### 7.2 Publishing GPS Data from Mobile
+- Configured mobile devices to publish GPS data to the Mosquitto broker using **Paho MQTT**.
+- Each device publishes data to a specific topic, e.g., `"livetrack/Adrien/location"`, which includes JSON data for latitude and longitude.
+
+#### 7.3 Subscribing to MQTT Topics
+- Modified the Raspberry Pi GUI to subscribe to relevant topics from the Mosquitto broker.
+- The GUI listens for messages and updates the map and status indicators in real-time as data is received.
+
+#### 7.4 Testing Mosquitto Integration
+- Tested the communication flow between mobile devices, the MQTT broker, and the GUI.
+- Confirmed that location updates are being received in real-time, and markers on the map are updating accordingly without delays.
+
+## 8.0 | Future Improvements
+#### 8.1 Handling Multiple Users
+- Plan to refine the GUI to better handle multiple users, possibly by adding different colored markers or customizable labels for each person.
+- Future updates may include adding more detailed geofencing features to provide notifications when a user enters or leaves a defined area.
+
+#### 8.2 Optimizing Data Storage
+- Considering removing **PocketBase** for data storage if real-time tracking is sufficient for user needs.
+- Alternatively, PocketBase could be retained solely for storing historical location data for future analytics.
+
+#### 8.3 Mobile App Integration
+- Plan on continuing to develop a simple mobile app for publishing GPS data instead of using third-party apps.
+- The app will provide better control over the data and allow for additional features like geofence notifications and manual status updates.
