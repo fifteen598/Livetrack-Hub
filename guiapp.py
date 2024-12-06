@@ -1,5 +1,5 @@
 from pathlib import Path
-from tkinter import Tk, Canvas, Button, PhotoImage
+from tkinter import Tk, Canvas, Button, PhotoImage, Label, Entry, Toplevel
 from tkintermapview import TkinterMapView
 import time
 import live_flask
@@ -92,17 +92,43 @@ class Application:
             ("button_2", "button_hover_2", (27.0, 367.0, 218.0, 58.0), "Button 2 clicked"),
             ("button_3", "button_hover_3", (27.0, 473.0, 218.0, 58.0), "Button 3 clicked"),
             ("button_4", "button_hover_4", (27.0, 579.0, 218.0, 58.0), "Button 4 clicked"),
-            ("button_5", "button_hover_5", (301.0, 811.0, 777.0, 42.0), "Button 5 clicked"),
+            ("button_5", "button_hover_5", (301.0, 811.0, 777.0, 42.0), self.set_geofence)
         ]
         for button_name, hover_name, geometry, command_msg in buttons_config:
             self.create_hover_button(button_name, hover_name, geometry, command_msg)
 
-    def create_hover_button(self, button_name, hover_name, geometry, command_msg):
+    def set_geofence(self):
+        # Create a popup window
+        popup = Toplevel(self.root)
+        popup.title("Set Geofence Location")
+        popup.geometry("400x200")
+
+        # Add label and entry for address input
+        Label(popup, text="Enter Address:").pack(pady=10)
+        address_entry = Entry(popup, width=40)
+        address_entry.pack(pady=10)
+
+        # Button to fetch and update coordinates
+        def submit_address():
+            address = address_entry.get()
+            coords = livetrack.get_coords(address)
+            if coords:
+                # Update home_coords and notify the user
+                self.user_manager.home_coords = coords
+                Label(popup, text=f"Geofence set to: {coords}", fg="green").pack(pady=10)
+                self.map_widget.set_position(coords[0], coords[1], 15)
+                self.map_widget.set_marker(coords[0], coords[1], text="Home")
+            else:
+                Label(popup, text="Failed to fetch coordinates.", fg="red").pack(pady=10)
+
+        Button(popup, text="Set Geofence", command=submit_address).pack(pady=10)        
+
+    def create_hover_button(self, button_name, hover_name, geometry, command):
         button = Button(
             image=self.images[button_name],
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print(command_msg),
+            command=lambda: command() if callable(command) else print(command),
             relief="flat"
         )
         button.place(x=geometry[0], y=geometry[1], width=geometry[2], height=geometry[3])
