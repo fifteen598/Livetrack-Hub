@@ -24,10 +24,11 @@ class Application:
         self.create_labels_with_transparency()
         self.map_widget = TkinterMapView(self.root, width=739, height=619, corner_radius=20)
         self.map_widget.place(x=321, y=152)  # Adjust x and y to place the map widget at the desired location
-        self.myx = live_flask.fetch_coordinates('Adrien')[0]
-        self.myy = live_flask.fetch_coordinates('Adrien')[1]
-        self.map_widget.set_position(self.myx, self.myy, 15)
-        self.map_widget.set_marker(self.myx, self.myy, text="Adrien")
+        self.update_map()
+        # self.myx = live_flask.fetch_coordinates('Adrien')[0]
+        # self.myy = live_flask.fetch_coordinates('Adrien')[1]
+        # self.map_widget.set_position(self.myx, self.myy, 15)
+        # self.map_widget.set_marker(self.myx, self.myy, text="Adrien")
 
     def setup_window(self):
         self.root.geometry("1440x900")
@@ -149,6 +150,18 @@ class Application:
 
         # Schedule next update
         self.root.after(60000, self.update_clock)
+
+    def update_map(self):
+        users = live_flask.fetch_records()  # Fetch all user records
+        home_coords = (37.71783399900819, -97.29209838253563)  # Define home coordinates
+
+        self.map_widget.delete_all_marker()  # Clear existing markers
+        for user, coords in users.items():
+            self.map_widget.set_marker(coords[0], coords[1], text=user)  # Add a marker for each user
+            #if user == "Adrien":  # Optionally focus the map on a specific user
+                #self.map_widget.set_position(coords[0], coords[1], 15)
+
+        self.root.after(5000, self.update_map)
 
 class UserStatus:
     def __init__(self, canvas, images, y_positions):
