@@ -9,23 +9,25 @@ import Coordinates as c
 import livetrack
 
 
+
+
 class Application:
     def __init__(self, root):
         self.root = root
-        self.user_names = [] # List of names
-        self.status_labels = [] # List of status labels
         self.setup_window()
         self.setup_canvas()
         self.load_images()
+        self.user_manager = UserStatus(canvas=self.canvas, images=self.images, y_positions=[283.0, 413.0, 543.0, 673.0, 802.0])
         self.create_buttons()
         self.setup_clock()
-        self.create_status_labels()
         self.update_user_statuses()
         self.create_labels_with_transparency()
         self.map_widget = TkinterMapView(self.root, width=739, height=619, corner_radius=20)
         self.map_widget.place(x=321, y=152)  # Adjust x and y to place the map widget at the desired location
-        self.map_widget.set_position(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1])
-        self.map_widget.set_marker(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1], text="Adrien")
+        self.myx = live_flask.fetch_coordinates('Adrien')[0]
+        self.myy = live_flask.fetch_coordinates('Adrien')[1]
+        self.map_widget.set_position(self.myx, self.myy, 15)
+        self.map_widget.set_marker(self.myx, self.myy, text="Adrien")
 
     def setup_window(self):
         self.root.geometry("1440x900")
@@ -75,64 +77,11 @@ class Application:
         self.canvas.create_image(1259.0, 503.0, image=self.images["status_panel"])
         self.canvas.create_image(137.0, 450.0, image=self.images["button_panel"])
 
-    def create_status_labels(self):
-        y_positions = [283.0, 413.0, 543.0, 673.0, 802.0]  # Y-coordinates for each user
-        self.user_statuses = {}  # Store references to each status image
-
-        users = live_flask.fetch_records()
-
-        for i, (user, coords) in enumerate(users.items(), start=1):
-            if i > len(y_positions):  # Limit to the number of positions available
-                break
-            status_image = self.canvas.create_image(1259.0, y_positions[i - 1], image=self.images[f"isAway_{i}"])
-            self.user_statuses[user] = status_image
-
-            self.canvas.create_text(
-                1164, y_positions[i - 1] - 30,
-                text=f"{user}",
-                font=("Poppins", 14),
-                fill="#FFFFFF",
-                tags="f{user}_label"
-            )
-
     def update_user_statuses(self):
-        home_coords = (37.71783399900819, -97.29209838253563)
-        # Example users and coordinates
         users = live_flask.fetch_records()
-        
-        y_positions = [283.0, 413.0, 543.0, 673.0, 802.0]
-        for i, (user, coords) in enumerate(users.items(), start=1):
-            if i>5: 
-                break
-
-
-            # Check if the user is within the geofence
-            if livetrack.geofence(coords, home_coords):
-                # Update canvas image to "isHome"
-                if user in self.user_statuses:
-                    self.canvas.itemconfig(self.user_statuses[user], image=self.images[f"isHome_{i}"])
-                else:
-                    print(f"User '{user}' not found in status labels.")
-            else:
-                # Update canvas image to "isAway"
-                if user in self.user_statuses:
-                    self.canvas.itemconfig(self.user_statuses[user], image=self.images[f"isAway_{i}"])
-                else:
-                    print(f"User '{user}' not found in status labels.")
-
-            if f"{user}_label" not in self.canvas.find_withtag(f"{user}_label"):
-                self.canvas.create_text(
-                    1164, y_positions[i - 1] - 30,
-                    text=user,
-                    font=("Poppins", 14),
-                    fill="#FFFFFF",
-                    tags=f"{user}_label"
-                )
-
-        for i in range(len(users) +1, 6):
-            self.canvas.delete(self.user_statuses.get(f"user_{i}", None))
-            self.canvas.delete(f"user_{i}_label")
-
+        home_coords = (37.71783399900819, -97.29209838253563)
+        self.user_manager.create_status_labels(users)
+        self.user_manager.update_status_labels(users, home_coords)
         self.root.after(5000, self.update_user_statuses)
 
     def create_buttons(self):
@@ -201,8 +150,71 @@ class Application:
         # Schedule next update
         self.root.after(60000, self.update_clock)
 
-#def run_flask():
-    #live_flask.app.run(host='0.0.0.0', port=5000)
+class UserStatus:
+    def __init__(self, canvas, images, y_positions):
+        self.canvas = canvas
+        self.images = images
+        self.y_positions = y_positions
+        self.user_statuses = {}
+
+    def create_status_labels(self, users):
+        self.clear_all_status_labels() # Y-coordinates for each user
+        users = live_flask.fetch_records()
+
+        for i, (user, coords) in enumerate(users.items(), start=1):
+            if i > len(self.y_positions):  # Limit to the number of positions available
+                break
+            status_image = self.canvas.create_image(1259.0, self.y_positions[i - 1], image=self.images[f"isAway_{i}"])
+            self.user_statuses[user] = status_image
+
+            self.canvas.create_text(
+                1175, self.y_positions[i - 1] - 17,
+                text=f"{user}",
+                font=("Poppins", 14),
+                fill="#FFFFFF",
+                tags="f{user}_label",
+                anchor="w"
+            )
+
+    def update_status_labels(self, users, home_coords):
+        for i, (user, coords) in enumerate(users.items(), start=1):
+            if i > len(self.y_positions):  # Limit to available positions
+                break
+
+            # Check if the user is within the geofence
+            if livetrack.geofence(coords, home_coords):
+                # Update canvas image to "isHome"
+                if user in self.user_statuses:
+                    self.canvas.itemconfig(self.user_statuses[user], image=self.images[f"isHome_{i}"])
+                else:
+                    print(f"User '{user}' not found in status labels.")
+            else:
+                # Update canvas image to "isAway"
+                if user in self.user_statuses:
+                    self.canvas.itemconfig(self.user_statuses[user], image=self.images[f"isAway_{i}"])
+                else:
+                    print(f"User '{user}' not found in status labels.")
+
+            # Ensure the label for this user exists
+            # if f"{user}_label" not in self.canvas.find_withtag(f"{user}_label"):
+            #     self.canvas.create_text(
+            #         1164, self.y_positions[i - 1] -30,
+            #         text=user,
+            #         font=("Poppins", 14),
+            #         fill="#FFFFFF",
+            #         tags=f"{user}_label"
+            #     )
+
+        # Remove extra labels and images beyond the current users
+        for i in range(len(users) + 1, len(self.y_positions) + 1):
+            self.canvas.delete(self.user_statuses.get(f"user_{i}", None))
+            self.canvas.delete(f"user_{i}_label")
+
+    def clear_all_status_labels(self):
+        for user, status_id in self.user_statuses.items():
+            self.canvas.delete(status_id)
+            self.canvas.delete(f"{user}_label")
+        self.user_statuses.clear()
 
 def run_gui():
     window = Tk()
