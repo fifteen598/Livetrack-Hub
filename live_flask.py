@@ -45,12 +45,8 @@ def fetch_records(): # this function gets all the records from the database
     response = requests.get(url)
     if response.status_code == 200:
         records = response.json().get('items', [])
-        for record in records:
-            name = record.get('name')
-            lat = record.get('lat')
-            long = record.get('long')
-            coordinate_dictionary[name] = (lat, long)
-    return coordinate_dictionary # when this function is called, it will return the dictionary of all the existing records in the database
+        return {record['name']: (float(record['lat']), float(record['long'])) for record in records}
+    return {} # when this function is called, it will return the dictionary of all the existing records in the database
 
 def fetch_coordinates(name): # specific record call
     url = f'{POCKETBASE_URL}/api/collections/{COLLECTION_NAME}/records'
