@@ -2,7 +2,7 @@
 
 ## 1.0 | Setting up Raspberry Pi
 #### 1.1 Flash the Raspberry Pi OS onto SD card
-- ~~no HDMI output~~ ; fixed by adding `hdmi_force_hotplug=1` and `hdmi_group=1` to the *raspOS config*.
+- ~~no HDMI output~~ ; fixed by adding `hdmi_force_hotplug=1` and `hdmi_group=1` to the *raspOS config*. 
 
 #### 1.2 Pi setup
 - in terminal, ran `sudo apt update`, `sudo apt upgrade`, `sudo apt install python3-pip`.
@@ -21,11 +21,15 @@ On local machine**
 - accessed pi remotely by running `ssh user@ip`
 - enter requested password
 
+---
+
 ## 2.0 | Enabling Google Maps API
 #### 2.1 API Access from Google Cloud
 - Created a project on Google Cloud (using free trial)
 - Enabled Geocoding & Distance Matrix APIs
 - Created API keys to make calls in future python scripts
+
+---
 
 ## 3.0 | API Key Management
 #### 3.1 Using Environment Variables
@@ -60,6 +64,8 @@ Refactored get_coords & get_addr**
 - This is to make things more readable and have a cleaner workspace for future reference.
 - So far, we have: livetrack.py, gui.py, Coordinates.py, and Addresses.py
 
+---
+
 ## 5.0 | GUI Setup
 #### 5.1 Download Tkinter as Framework
 > Using https://tkdocs.com/tutorial/onepage.html, installed tkinter and created a basic GUI just to test feasibility. Using static coordinates and campus coordinates as a temporary geofence.
@@ -88,43 +94,56 @@ Refactored get_coords & get_addr**
 - The old GUI functioanlity which included real-time location updates, geofencing, and coordinate based status updates needed to be applied to the new GUI so I could see if there were any issues in the process.
 - Verified all dynamic features such as `update_status` function works in new design
 
+---
+
 ## 6.0 | User Interaction and Real-Time Updates
-#### 6.1 Dynamic User Input
-- Added functionality for the app to prompt users to enter names for tracking purposes. The user can enter up to 5 names, which will be displayed on the GUI.
-- This allows for dynamic addition of users and provides better flexibility in the tracking system.
+#### ~~ 6.1 Dynamic User Input~~ removed
+- ~~Added functionality for the app to prompt users to enter names for tracking purposes. The user can enter up to 5 names, which will be displayed on the GUI.~~
+- ~~This allows for dynamic addition of users and provides better flexibility in the tracking system.~~
 
 #### 6.2 Real-Time Location Display
 - Integrated **TkinterMapView** to display real-time locations on the GUI.
 - Used `live_flask.fetch_coordinates()` to retrieve the coordinates of the tracked individuals and update their position on the map.
 - Added markers on the map for each user, with their name displayed for easy identification.
 
-#### 6.3 Status Updates with MQTT
-- Transitioned from Flask to **Mosquitto** as an MQTT broker for real-time data updates.
-- Each mobile device publishes its GPS coordinates to the broker, and the Raspberry Pi GUI subscribes to receive these updates instantly.
-- Removed Flask server from the project as its functionality was deemed redundant.
+#### ~~6.3 Status Updates with MQTT~~ removed
+- ~~Transitioned from Flask to **Mosquitto** as an MQTT broker for real-time data updates.~~
+- ~~Each mobile device publishes its GPS coordinates to the broker, and the Raspberry Pi GUI subscribes to receive these updates instantly.~~
+- ~~Removed Flask server from the project as its functionality was deemed redundant.~~
 
 #### 6.4 Real-Time Status Indicators
 - Created visual status indicators for each user (e.g., "isAway" or "isHome") based on their current location relative to predefined geofences.
 - Added new icons for "isHome" and "isAway" statuses, which change dynamically depending on the user's location.
 - Labels are updated in real-time as new location data is received from the MQTT broker.
 
-## 7.0 | MQTT Integration _(work in progress)_
-> 7.0 is not implemented yet
-#### 7.1 Setting up Mosquitto
-- Installed Mosquitto MQTT broker on the Raspberry Pi to handle messaging between devices.
-- Configured Mosquitto to listen on port **1883** for incoming messages from mobile devices.
+---
 
-#### 7.2 Publishing GPS Data from Mobile
-- Configured mobile devices to publish GPS data to the Mosquitto broker using **Paho MQTT**.
-- Each device publishes data to a specific topic, e.g., `"livetrack/Adrien/location"`, which includes JSON data for latitude and longitude.
+## 7.0 | Server Integration with PythonAnywhere
 
-#### 7.3 Subscribing to MQTT Topics
-- Modified the Raspberry Pi GUI to subscribe to relevant topics from the Mosquitto broker.
-- The GUI listens for messages and updates the map and status indicators in real-time as data is received.
+### 7.1 Transition to Cloud Hosting
+- Replaced local Flask server with a cloud-hosted Flask server on **PythonAnywhere**.
+- PythonAnywhere hosts the Flask application and a **MySQL database** that stores user location data.
 
-#### 7.4 Testing Mosquitto Integration
-- Tested the communication flow between mobile devices, the MQTT broker, and the GUI.
-- Confirmed that location updates are being received in real-time, and markers on the map are updating accordingly without delays.
+### 7.2 Mobile Data Communication via Shortcuts App
+- Used the **Shortcuts app** on iOS to send live location data to the server:
+  - The script captures the phone's **latitude**, **longitude**, and the user's **name**.
+  - It sends this data as a **POST request** to the `/update_location` endpoint on the PythonAnywhere-hosted Flask server.
+- **Steps in the Shortcuts App**:
+  1. Use the `Get Current Location` action to capture the device’s latitude and longitude.
+  2. Add a `Text` action to input the user's name.
+  3. Use the `Get Contents of URL` action:
+     - Set the URL to `https://fifteen598.pythonanywhere.com/update_location`.
+     - Configure it to send the data as a **POST request** with the following JSON body:
+       ```json
+       {
+           "name": "<Your Name>",
+           "latitude": <latitude>,
+           "longitude": <longitude>
+       }
+       ```
+  4. Run the shortcut periodically or on demand to keep the database updated with live location data.
+
+---
 
 ## 8.0 | Future Improvements
 #### 8.1 Handling Multiple Users
@@ -139,5 +158,65 @@ Refactored get_coords & get_addr**
 - Plan on continuing to develop a simple mobile app for publishing GPS data instead of using third-party apps.
 - The app will provide better control over the data and allow for additional features like geofence notifications and manual status updates.
 
-#### 8.4 Explore MQQT Option
-- A more practical solution if the application development does not follow through with our project.
+---
+
+## 9.0 | Interactive Geofence Configuration
+### 9.1 New Feature: Geofence Setup via Address Input
+- Added functionality to set the geofence dynamically using a street address.
+
+### 9.2 Implementation Steps
+1. Integrated a popup window accessible via **Button 5** on the GUI:
+   - Prompt the user to input an address.
+2. Address is processed using the `livetrack.get_coords` function:
+   - Converts the input address to geographic coordinates via Google Geocoding API.
+3. Updated the geofence logic to dynamically reflect the new coordinates:
+   - Changes are reflected on the map with updated geofence markers.
+
+### 9.3 Real-Time Updates
+- The map widget updates to display the new geofence and adjust its marker position.
+- New geofence is applied dynamically without needing to restart the application.
+
+### 9.4 Benefits
+- Improves user interaction by allowing geofence configuration in real-time.
+- Reduces manual intervention and enhances demo capabilities for showcasing the project.
+
+---
+
+## 10.0 | Engineering Open House Demo
+
+### 10.1 Demonstration Plan
+- **Interactive Features**:
+  - Visitors can input addresses to dynamically set geofences.
+  - The GUI updates real-time location markers and status indicators to reflect new data.
+  - Mobile phones actively send live location data to the server for real-time updates.
+- **Focus Areas**:
+  - Showcasing dynamic updates via the map widget and user status panel.
+  - Highlighting the seamless integration of mobile location updates with the cloud server.
+
+### 10.2 Backup Plan
+- Prepare a fallback demonstration using static data to showcase functionality in case of connectivity issues with the cloud-hosted Flask server.
+
+---
+
+## 11.0 | Challenges and Solutions
+
+### 11.1 Database Access
+- Moved from local database and Flask server access to **PythonAnywhere** for centralized hosting.
+- Flask endpoints are used to fetch and manipulate data stored in the MySQL database.
+
+### 11.2 Real-Time Map Updates
+- Addressed issues with integrating dynamic updates in `TkinterMapView` by implementing periodic refresh logic for user markers.
+
+### 11.3 Geofence Integration
+- Initial challenges with setting geofences via the GUI were resolved using Google Geocoding API and dynamic map updates.
+
+### 11.4 Was not able to connect to School's WiFi
+- Due to assumed security restrictions, the Raspberry Pi was unable to connect to the school's WiFi network. We instead used a mobile hotspot for internet access.
+
+---
+
+## 12.0 | Next Steps
+
+- Add logic for dynamic map centering based on user marker positions.
+- Explore options for enhanced mobile app integration.
+- Investigate geofence-specific notifications to improve real-time user interaction.
