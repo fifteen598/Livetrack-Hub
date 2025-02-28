@@ -14,17 +14,25 @@ class Application:
     def __init__(self, root):
         self.root = root
         self.is_sharing = True  # Track sharing state
+        
+        # Define the list of users to track; update as needed
+        self.users = ['Adrien', 'Alice', 'Bob']  
+
         self.setup_window()
         self.setup_canvas()
         self.load_images()
         self.create_buttons()
         self.setup_clock()
         self.create_labels_with_transparency()
+        
+        # Initialize map widget and place it
         self.map_widget = TkinterMapView(self.root, width=779, height=659, corner_radius=20)
-        self.map_widget.place(x=301, y=132)  # Adjust x and y to place the map widget at the desired location
-        self.map_widget.set_position(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1])
-        self.map_widget.set_marker(live_flask.fetch_coordinates('Adrien')[0], live_flask.fetch_coordinates('Adrien')[1], text="My Location")
-         # Set up periodic map updates
+        self.map_widget.place(x=301, y=132)
+        
+        # Initialize map by updating markers and centering based on current user positions
+        self.update_map_position()
+        
+        # Set up periodic map updates every 5 seconds
         self.root.after(5000, self.update_map_position)
 
     def setup_window(self):
@@ -73,7 +81,6 @@ class Application:
             "sharing_off": PhotoImage(file=self.relative_to_assets("sharing_off.png")),
             "sharing_on_hover": PhotoImage(file=self.relative_to_assets("sharing_on_hover.png")),
             "sharing_off_hover": PhotoImage(file=self.relative_to_assets("sharing_off_hover.png"))
-
         }
         # Creating canvas images
         self.canvas.create_image(720.0, 450.0, image=self.images["background"])
@@ -89,7 +96,7 @@ class Application:
         self.canvas.create_image(1259.0, 802.0, image=self.images["isHome_5"])
 
     def create_buttons(self):
-        # Creating buttons using a helper method
+        # Define button configurations: (button_image, hover_image, geometry, command message)
         buttons_config = [
             ("button_1", "button_hover_1", (27.0, 259.0, 218.0, 58.0), "Button 1 clicked"),
             ("button_2", "button_hover_2", (27.0, 367.0, 218.0, 58.0), "Button 2 clicked"),
@@ -103,12 +110,13 @@ class Application:
             self.create_hover_button(button_name, hover_name, geometry, command_msg)
 
     def create_hover_button(self, button_name, hover_name, geometry, command_msg):
+        # Use toggle_sharing method if command message indicates so; otherwise, simply print the command message.
         command = self.toggle_sharing if command_msg == "toggle_sharing" else lambda: print(command_msg)
         button = Button(
             image=self.images[button_name],
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print(command_msg),
+            command=command,
             relief="flat"
         )
         button.place(x=geometry[0], y=geometry[1], width=geometry[2], height=geometry[3])
@@ -123,7 +131,6 @@ class Application:
             button.bind('<Enter>', lambda e: button.config(image=self.images[hover_name]))
             button.bind('<Leave>', lambda e: button.config(image=self.images[button_name]))
 
-    # new methods
     def toggle_sharing(self):
         """Toggle location sharing"""
         response = requests.post(f'http://localhost:5000/toggle_sharing/Adrien')
@@ -132,9 +139,7 @@ class Application:
             # Update button image based on state
             button = self.find_button_by_geometry((27.0, 685.0, 218.0, 58.0))
             if button:
-                button.config(
-                    image=self.images["sharing_on" if self.is_sharing else "sharing_off"]
-                )
+                button.config(image=self.images["sharing_on" if self.is_sharing else "sharing_off"])
 
     def find_button_by_geometry(self, geometry):
         """Helper method to find button by its geometry"""
@@ -146,12 +151,25 @@ class Application:
         return None
 
     def update_map_position(self):
-        """Update map marker position"""
+        """Update map center and markers based on all tracked user positions."""
         try:
-            coordinates = live_flask.fetch_coordinates('Adrien')
-            if coordinates:
-                self.map_widget.set_position(coordinates[0], coordinates[1])
-                self.map_widget.set_marker(coordinates[0], coordinates[1], text="My Location")
+            all_coords = []
+            # If TkinterMapView supports clearing markers, do so
+            if hasattr(self.map_widget, 'delete_all_marker'):
+                self.map_widget.delete_all_marker()
+
+            # Loop through each user, fetch coordinates, and add a marker
+            for user in self.users:
+                coords = live_flask.fetch_coordinates(user)
+                if coords:
+                    all_coords.append(coords)
+                    self.map_widget.set_marker(coords[0], coords[1], text=user)
+
+            # Calculate and set the center of the map as the average of all coordinates
+            if all_coords:
+                avg_lat = sum(lat for lat, lng in all_coords) / len(all_coords)
+                avg_lng = sum(lng for lat, lng in all_coords) / len(all_coords)
+                self.map_widget.set_position(avg_lat, avg_lng)
         except Exception as e:
             print(f"Error updating map: {e}")
     
@@ -159,8 +177,7 @@ class Application:
         # Adding text labels using canvas with transparent background
         labels_config = []
         for text, x, y in labels_config:
-            self.canvas.create_text(
-                x, y, text=text, font=("Poppins", 14), fill="#000000")
+            self.canvas.create_text(x, y, text=text, font=("Poppins", 14), fill="#000000")
 
     def relative_to_assets(self, path: str) -> Path:
         return self.assets_path / Path(path)
