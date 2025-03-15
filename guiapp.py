@@ -184,8 +184,8 @@ class Application:
         self.map_widget.delete_all_marker()  # Clear existing markers
         for user, coords in users.items():
             self.map_widget.set_marker(coords[0], coords[1], text=user)  # Add a marker for each user
-            #if user == "Adrien":  # Optionally focus the map on a specific user
-                #self.map_widget.set_position(coords[0], coords[1], 15)
+            if user == "Adrien":  # Optionally focus the map on a specific user
+                self.map_widget.set_position(coords[0], coords[1], 15)
 
         self.root.after(5000, self.update_map)
 

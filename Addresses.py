@@ -1,1 +1,0 @@
-campus = '1845 Fairmount St, Wichita, United States' # Wichita State University's address

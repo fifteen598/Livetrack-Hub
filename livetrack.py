@@ -1,8 +1,6 @@
 import os
 import requests
 from geopy import distance
-import Coordinates as c
-import Addresses as a
 
 key = os.getenv('GOOGLE_API')
 

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="css/globals.css" />
+    <link rel="stylesheet" href="css/styleguide.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+
+  <!-- <body>
+    <video 
+      id="bg-video" 
+      autoplay 
+      muted 
+      loop 
+      playsinline
+    >
+      <source src="static/backdrop.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video> -->
+
+
+    <div class="frame">
+      <div class="overlap-wrapper">
+        <div class="overlap">
+            <div class="overlap-group" style="font-family: 'Poppins', sans-serif;">
+            <img class="body" src="static/body.png" />/>
+            <img class="dashboard" src="static/dashboard.png" />
+            <img class="button_panel" src="static/button_panel.png" />
+            <!-- <div class="dashboard"></div> -->
+            <!-- <div class="button_panel"></div>
+            <div class="status_panel"></div> -->
+            <img class="status_panel" src="static/status_panel.png" />
+
+            <div id="map"></div>
+
+            <div id="user-statuses" style="position:absolute; top:160px; left:1120px; width:270px; color: white; font-family: 'Poppins', sans-serif;"></div>
+            <div id="status-container">
+              <img id="status_away_1" class="status-image" src="static/isAway_1.png" />
+              <img id="status_home_1" class="status-image" src="static/isHome_1.png" style="display: none;" />
+
+              <img id="status_away_2" class="status-image" src="static/isAway_2.png" />
+              <img id="status_home_2" class="status-image" src="static/isHome_2.png" style="display: none;" />
+
+              <img id="status_away_3" class="status-image" src="static/isAway_3.png" />
+              <img id="status_home_3" class="status-image" src="static/isHome_3.png" style="display: none;" />
+
+              <img id="status_away_4" class="status-image" src="static/isAway_4.png" />
+              <img id="status_home_4" class="status-image" src="static/isHome_4.png" style="display: none;" />
+
+              <img id="status_away_5" class="status-image" src="static/isAway_5.png" />
+              <img id="status_home_5" class="status-image" src="static/isHome_5.png" style="display: none;" />
+            </div>
+          </div>
+
+          <header class="cd-header">
+            <div class="header-wrapper">
+              <div class="nav-but-wrap">
+                <div class="menu-icon hover-target">
+                    <span class="menu-icon__line menu-icon__line-left"></span>
+                    <span class="menu-icon__line"></span>
+                    <span class="menu-icon__line menu-icon__line-right"></span>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          
+
+          <div class="nav">
+            <div class="nav__content">
+                <ul class="nav__list">
+                    <li class="nav__list-item active-nav"><a href="#">Map View</a></li>
+                    <li class="nav__list-item"><a href="#">Street View</a></li>
+                    <li class="nav__list-item"><a href="#">Historical View</a></li>
+                    <li class="nav__list-item"><a href="#">Settings</a></li>
+                </ul>
+            </div>
+          </div>
+
+          <div class="button-container">
+            <button class="btn btn-slide-show" style="top: 261px;" type="button">
+              <span class="btn-slide-show-text1">Map View</span>
+              <span class="btn-slide-show-inner">
+                <span class="btn-slide-show-text2">&gt;&gt;</span>
+              </span>
+            </button>
+
+            <button class="btn btn-slide-show" style="top: 367px;" type="button">
+              <span class="btn-slide-show-text1">Street View</span>
+              <span class="btn-slide-show-inner">
+                <span class="btn-slide-show-text2">&gt;&gt;</span>
+              </span>
+            </button>
+
+            <button class="btn btn-slide-show" style="top: 473px;" type="button">
+              <span class="btn-slide-show-text1">Historical View</span>
+              <span class="btn-slide-show-inner">
+                <span class="btn-slide-show-text2">&gt;&gt;</span>
+              </span>
+            </button>
+
+            <button class="btn btn-slide-show" style="top: 579px;" type="button">
+              <span class="btn-slide-show-text1">Settings</span>
+              <span class="btn-slide-show-inner">
+                <span class="btn-slide-show-text2">&gt;&gt;</span>
+              </span>
+            </button>
+
+          </div>
+
+          <button class="reposition-button">Reposition</button>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
