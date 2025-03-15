@@ -1,5 +1,5 @@
 .frame {
-  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.288);
   display: flex;
   flex-direction: row;
   justify-content: center;  
@@ -7,7 +7,7 @@
   width: 100%;
 }
 
-/* #bg-video {
+#bg-video {
   position: fixed;
   top: 0;
   left: 0;
@@ -16,16 +16,16 @@
   object-fit: cover;
   z-index: -1;
 
-} */
+}
 
 .frame .overlap-wrapper {
-  background-color: rgb(0, 0, 0);
+  /* background-color: rgb(0, 0, 0);
   background: linear-gradient(180deg, rgb(31.06, 23.69, 31.45) 100%);
   background-image: url(../static/background.png);
   background-size: cover;
   background-position: right;
   width: 1440px;
-  height: 900px;
+  height: 900px; */
 }
 
 .frame .overlap {
@@ -126,12 +126,12 @@
   height: 900px;       /* or auto / 100% if you want it fluid  */
   
   /* The “frosted glass” effect */
-  /* background: rgba(0, 0, 0, 0.36);
+  background: rgba(0, 0, 0, 0.36);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(9.4px);
+  backdrop-filter: blur(50px);
   -webkit-backdrop-filter: blur(9.4px);
-  border: 1px solid rgba(0, 0, 0, 0.34); */
+  border: 1px solid rgba(0, 0, 0, 0.34);
 
   /* If needed, ensure it’s above other content but below any overlays */
   z-index: 0; 
