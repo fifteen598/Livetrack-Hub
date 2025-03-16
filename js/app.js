@@ -1,49 +1,56 @@
 const API_SERVER = 'https://fifteen598.pythonanywhere.com';
-const map = L.map('map').setView([37.71783399900819, -97.29209838253563], 15);
-
+const map = L.map('map').setView([37.7178, -97.2921], 14);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors & CartoDB'
+  attribution: '&copy; OpenStreetMap contributors & CartoDB'
 }).addTo(map);
 
 async function fetchAndUpdate() {
-    try {
-        const response = await fetch(`${API_SERVER}/fetch_records`);
-        const users = await response.json();
-        updateStatuses(users);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    }
+  try {
+      const response = await fetch(`${API_SERVER}/fetch_records`);
+      const users = await response.json();
+      updateStatuses(users); 
+  } catch (error) {
+      console.error("Error fetching data:", error);
+  }
 }
-
-
 
 function updateStatuses(users) {
-    const homeCoords = [37.71783399900819, -97.29209838253563];
+  const homeCoords = [37.72407864223953, -97.1753984504353];
+  const statusContainer = document.getElementById("status-container");
 
-    let index = 1;
-    for (const [user, coords] of Object.entries(users)) {
-        const userCoords = [coords.latitude, coords.longitude];
-        const distance = map.distance(userCoords, homeCoords);
-        const isHome = distance <= 100;
+  statusContainer.innerHTML = "";
 
-        // Get both Home and Away images
-        const homeImage = document.getElementById(`status_home_${index}`);
-        const awayImage = document.getElementById(`status_away_${index}`);
-        if (isHome) {
-            awayImage.style.display = "none";
-            homeImage.style.display = "block";
-        } else {
-            homeImage.style.display = "none";
-            awayImage.style.display = "block";
-        }
-        index++;
-        if (index > 5) break; // Ensure we don't exceed the set number of images
-    }
+  Object.entries(users).forEach(([user, coords]) => {
+      const userCoords = [coords.latitude, coords.longitude];
+      const distance = map.distance(userCoords, homeCoords);
+      const isHome = distance <= 100;
+
+
+      const statusElement = document.createElement("div");
+      statusElement.classList.add("status-item");
+      statusElement.innerHTML = `
+          <span class="status-name">${user}</span>
+          <span class="status-text ${isHome ? "home" : "away"}">${isHome ? "Home" : "Away"}</span>
+      `;
+
+      statusElement.addEventListener("click", () => {
+          map.setView(userCoords, 17);
+      });
+
+      // Append to status container
+      statusContainer.appendChild(statusElement);
+
+      // Animate status change
+      setTimeout(() => {
+          statusElement.classList.add("fade-in");
+      }, 100);
+  });
 }
+
 
 async function updateLocation(name, latitude, longitude) {
     try {
-      const response = await fetch(`${FLASK_SERVER_URL}/update_location`, {
+      const response = await fetch(`${API_SERVER}/update_location`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,27 +69,38 @@ async function updateLocation(name, latitude, longitude) {
 fetchAndUpdate();
 setInterval(fetchAndUpdate, 5000);
 
-(function($) { "use strict";
+function toggleMenu() {
+  document.body.classList.toggle('nav-active');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const menuWrap = document.querySelector('.nav-but-wrap');
+  if (menuWrap) {
+    menuWrap.addEventListener('click', () => {
+      toggleMenu();
+    });
+  }
+});
 
-	window.test = function () {
-		var body = undefined;
-		var menu = undefined;
-		var menuItems = undefined;
-		var init = function init() {
-			body = document.querySelector('body');
-			menu = document.querySelector('.menu-icon');
-			menuItems = document.querySelectorAll('.nav__list-item');
-			applyListeners();
-		};
-		var applyListeners = function applyListeners() {
-			menu.addEventListener('click', function () {
-				return toggleClass(body, 'nav-active');
-			});
-		};
-		var toggleClass = function toggleClass(element, stringClass) {
-			if (element.classList.contains(stringClass)) element.classList.remove(stringClass);else element.classList.add(stringClass);
-		};
-		init();
-	}();        
-              
-})(jQuery); 
+(function($) {
+  "use strict";
+  const init = () => {
+    const frame = document.querySelector('.frame');
+    const menuIcon = document.querySelector('.menu-icon');
+
+    if (menuIcon && frame) {
+      menuIcon.addEventListener('click', () => {
+        frame.classList.toggle('nav-active');
+      });
+    }
+    const repositionBtn = document.getElementById('reposition-btn');
+    if (repositionBtn) {
+      repositionBtn.addEventListener('click', () => {
+        // Re-center map or any other action
+        map.setView([37.7178, -97.2921], 14);
+      });
+    }
+  };
+  init();
+})(jQuery);
+
+
