@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/globals.css" />
     <link rel="stylesheet" href="css/styleguide.css" />
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/bg.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins&display=swap"
@@ -19,52 +20,78 @@
   </head>
 
   <body>
-    <video id="bg-video" autoplay muted loop playsinline>
-      <source src="static/backdrop.mp4" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+    <div class="gradient-bg">
+          <!-- MAIN GRID -->
+          <div class="frame">
+            <!-- LEFT COLUMN: .button-panel -->
+            <div class="button-panel">
+              <div class="button-panel__content">
+                <ul class="panel-list" id="view-selector">
+                  <li class="panel-list-item" data-view="map">
+                    <a href="#">Map View</a>
+                  </li>
+                  <li class="panel-list-item" data-view="street">
+                    <a href="#">Street View</a>
+                  </li>
+                  <li class="panel-list-item" data-view="historical">
+                    <a href="#">Historical View</a>
+                  </li>
+                  <li class="panel-list-item"><a href="#">Settings</a></li>
+                </ul>
+              </div>
+            </div>
+    
+            <!-- TOP MIDDLE: Dashboard -->
+            <div class="dashboard-panel">
+              <div class="dash-label">Dashboard</div>
+            </div>
+    
+            <!-- CENTER: Map -->
+            <div class="map-panel">
+              <div class="label">
+                <img class="livetrack-hub" src="static/logo2.png" alt="LiveTrack-Hub Logo" />
+              </div>
+              <div id="map" class="view-panel hidden"> ... real map ... </div>
+              <div id="street" class="view-panel hidden"> ... street view code ... </div>
+              <div id="historical" class="view-panel hidden"> ... historical stuff ... </div>
+            </div>
+    
+            <!-- RIGHT: Status -->
+            <div class="status-panel">
+              <div class="status-label">Status</div>
+              <div id="status-container"></div>
+            </div>
+          </div>
+
+      <svg xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+      </svg>
+      <div class="gradients-container">
+
+        
+
+
+        <div class="g1"></div>
+        <div class="g2"></div>
+        <div class="g3"></div>
+        <div class="g4"></div>
+        <div class="g5"></div>
+        <div class="interactive"></div>
+      </div>
+
+    </div>
 
     <div class="nav-but-wrap">
       <div class="menu-icon hover-target">
         <span class="menu-icon__line menu-icon__line-left"></span>
         <span class="menu-icon__line"></span>
         <span class="menu-icon__line menu-icon__line-right"></span>
-      </div>
-    </div>
-
-    <div class="label">
-      <img class="livetrack-hub" src="static/logo.png" alt="LiveTrack-Hub Logo" />
-    </div>
-
-    <!-- MAIN GRID -->
-    <div class="frame">
-      <!-- LEFT COLUMN: .button-panel -->
-      <div class="button-panel">
-        <div class="button-panel__content">
-          <ul class="panel-list">
-            <li class="panel-list-item active-link"><a href="#">Map View</a></li>
-            <li class="panel-list-item"><a href="#">Street View</a></li>
-            <li class="panel-list-item"><a href="#">Historical View</a></li>
-            <li class="panel-list-item"><a href="#">Settings</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- TOP MIDDLE: Dashboard -->
-      <div class="dashboard-panel">
-        <div class="dash-label">Dashboard</div>
-      </div>
-
-      <!-- CENTER: Map -->
-      <div class="map-panel">
-        <div id="map"></div>
-        <button class="reposition-button" id="reposition-btn">Reposition</button>
-      </div>
-
-      <!-- RIGHT: Status -->
-      <div class="status-panel">
-        <div class="status-label">Status</div>
-        <div id="status-container"></div>
       </div>
     </div>
 
