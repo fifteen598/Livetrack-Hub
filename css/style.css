@@ -11,27 +11,27 @@
     min-height: 100vh;
     position: relative;
   }
-  
-  #bg-video {
-    position: fixed;
+  #gradient-bg {
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -1;
   }
-  
   .label {
     position: absolute;
-    top: 275px;
-    left: 25px;
-    padding: 20px;
-    z-index: 50;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0px;
+    z-index: 5;
   }
   .livetrack-hub {
+    position: relative;
     width: 100%;
     height: 100%;
+    transition:cubic-bezier(0.755, 0.05, 0.855, 0.06);
   }
   
 /* ##################################################### 2) MAIN GRID LAYOUT ##################################################### */
@@ -46,12 +46,13 @@
     width: 90vw;
     height: 90vh;
     margin: 40px auto;
-    padding: 20px;
+    padding: auto;
     transition: grid-template-columns 0.3s ease;
     position: relative;
+    z-index: 30;
   }
   body.nav-active .frame {
-    grid-template-columns: 275px 1fr 310px;
+    grid-template-columns: 225px 1fr 310px;
   }
   
 /* ##################################################### 3) HAMBURGER-BUTTON ##################################################### */
@@ -79,7 +80,7 @@
     height: 2px;
     width: 30px;
     display: block;
-    background-color: #fff;
+    background-color: #ffffff;
     margin-bottom: 7px;
     cursor: pointer;
   
@@ -129,11 +130,19 @@
   
 /* ##################################################### 4) BUTTON-PANEL ##################################################### */
   .button-panel {
+    top: 0px;
+    left: -250px;
     grid-area: button;
-    position: relative;
-    background: rgba(0, 0, 0, 0.171);
-    border-radius: 10px;
+    position: fixed;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.155);
+    border-radius: 0px;
     overflow: hidden;
+    transition: left 0.3s ease;
+  }
+
+  body.nav-active .button-panel {
+    left: 0px;
   }
   
   .button-panel::before,
@@ -154,17 +163,24 @@
       height 0.6s cubic-bezier(0.77, 0, 0.175, 1);
   }
   .button-panel::after {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.25);
+    background-repeat: no-repeat;
+    background-position: bottom center;
     background-size: 300%;
-    z-index: 5;
-    box-shadow: 6px 7px 50px 0 rgba(187, 187, 187, 0.5);
+    box-shadow: 6px 7px 28px rgba(0, 0, 0, 0.5);
+    transition-delay: 0.2s;
+  }
+  .button-panel::before {
+    background-color: rgba(0, 0, 0, 0.25);
+    box-shadow: 6px 7px 28px rgba(0, 0, 0, 0.5);
+    transition-delay: 0.5s;
   }
   
   .nav-active .frame .button-panel::before,
   .nav-active .frame .button-panel::after {
     width: 100%;
     height: 100%;
-    border-radius: 15px;
+    border-radius: 0px;
   }
   
 /* ##################################################### 5) BUTTON-PANEL CONTENTS ##################################################### */
@@ -182,7 +198,7 @@
     opacity: 0;
     transform: translateX(30px);
     transition: opacity 0.3s ease, transform 0.3s ease;
-    margin: 12px 0;
+    margin: 100px 0;
   }
   .panel-list-item a {
     color: rgba(255, 255, 255, 0.6);
@@ -202,6 +218,19 @@
   .nav-active .frame .panel-list-item {
     opacity: 1;
     transform: translateX(0);
+  }
+
+  .nav-active .frame .panel-list-item:nth-child(1) {
+    transition-delay: 0.6s;
+  }
+  .nav-active .frame .panel-list-item:nth-child(2) {
+    transition-delay: 0.7s;
+  }
+  .nav-active .frame .panel-list-item:nth-child(3) {
+    transition-delay: 0.8s;
+  }
+  .nav-active .frame .panel-list-item:nth-child(4) {
+    transition-delay: 0.9s;
   }
   
 /* ##################################################### 6) DASHBOARD-PANEL ##################################################### */
@@ -225,8 +254,12 @@
 /* ##################################################### 7) MAP-PANEL ##################################################### */
   .map-panel {
     grid-area: map;
-    background-color: #a1a1a1;
+    background-color: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
     border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.15);
     position: relative;
   }
   #map {
@@ -236,6 +269,12 @@
     width: 100%;
     height: 100%;
     border-radius: 20px;
+  }
+  .view-panel {
+    display: block;
+  }
+  .hidden {
+    display: none;
   }
   
 /* ##################################################### 8) STATUS-PANEL ##################################################### */
@@ -255,33 +294,37 @@
   .status-label {
     font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 15px;
+    margin-bottom: 30px;
   }
   
  /* ##################################################### 9) STATUS-PANEL CONTENTS ##################################################### */
   #status-container {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 30px;
     width: 100%;
   }
   .status-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(34, 36, 44, 0.8);
-    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px 15px;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    transition: background 0.5s ease, transform 0.5s ease;
   }
-  .status-item:hover {
-    background: rgba(48, 224, 161, 0.8);
+  .status-item:hover{
+    background: rgba(223, 223, 223, 0.8);
     transform: scale(1.05);
   }
   .status-name {
-    font-size: 16px;
+    font-size: 22px;
     font-weight: bold;
+  }
+  .status-item:hover .status-name {
+    color: black;
+    transition: color 0.5s ease;
   }
   .status-text {
     padding: 5px 10px;
@@ -290,11 +333,22 @@
     text-transform: uppercase;
   }
   .status-text.home {
-    background: rgba(17, 202, 190, 1);
-    color: black;
+    background: #246CF9;
+    color: rgb(255, 255, 255);
   }
   .status-text.away {
-    background: rgba(250, 34, 86, 1);
+    background: #CE244D;
     color: white;
   }
-  
+  .status-item.home{
+    background: rgba(36, 108, 249, 0.5);
+  }
+  .status-item.away{
+    background: rgba(206, 36, 77, 0.5);
+  }
+  .status-item.home:hover{
+    background: rgba(255, 255, 255, 0.5);
+  }
+  .status-item.away:hover{
+    background: rgba(255, 255, 255, 0.5);
+  }
