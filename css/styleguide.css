@@ -1,16 +1,6 @@
 :root {
-  --glassy: rgba(20, 21, 24, 0.2);
-  --collection-1-color: rgb(250, 34, 86); /* hex: fa2256 */
-  --collection-1-color-2: rgba(17, 202, 190, 1);
-  --collection-1-color-3: rgba(48, 224, 161, 1);
-  --collection-1-color-4: rgba(162, 118, 255, 1);
-  --collection-1-color-5: rgb(36, 107, 249); /* hex: 246cf9 */
-  --collection-1-color-6: rgba(255, 181, 69, 1);
-  --collection-1-color-7: rgba(20, 21, 24, 1);
-  --collection-1-color-8: rgba(29, 31, 37, 1);
-  --collection-1-color-9: rgba(34, 36, 44, 1);
-  --collection-1-color-10: rgba(40, 44, 56, 1);
-  --collection-1-color-11: rgba(60, 66, 84, 1);
-  --collection-1-color-12: rgba(117, 123, 140, 1);
-  --collection-1-color-13: rgba(228, 230, 237, 1);
+  --glassy-panel: rgba(0, 0, 0, 0.35);
+  --color-away: rgb(250, 34, 86); /* hex: fa2256 */
+  --color-home: rgb(36, 107, 249); /* hex: 246cf9 */
+
 }

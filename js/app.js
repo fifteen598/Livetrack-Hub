@@ -158,6 +158,27 @@ $(document).ready(function() {
 });
 
 
+// CLOCK AND DATE FUNCTION
+function  updateClock(){
+  const now = new Date();
+  const hours = now.getHours() % 12 || 12;
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  const ampm = now.getHours() >= 12 ? "PM" : "AM";
+  const formattedTime = `${hours}:${minutes} ${ampm}`;
+
+  const options = { weekday: "short", month: "short", day: "numeric" };
+  const formattedDate = now.toLocaleDateString("en-US", options);
+
+  document.getElementById("clock").textContent = formattedTime;
+  document.getElementById("date").textContent = formattedDate;
+}
+
+// Update clock every second
+setInterval(updateClock, 1000);
+updateClock(); // Initialize immediately
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
   const menuWrap = document.querySelector('.nav-but-wrap');
   if (menuWrap) {
