@@ -1,17 +1,57 @@
 const API_SERVER = 'https://fifteen598.pythonanywhere.com';
+const apiKey = "AIzaSyAje7bOq4ngPCC1rJ1h0Md2yHpPxCRMBMU";
 const map = L.map('map').setView([37.7178, -97.2921], 14);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors & CartoDB'
 }).addTo(map);
 
+let markers = {};
+let streetMap, panorama; 
 async function fetchAndUpdate() {
   try {
       const response = await fetch(`${API_SERVER}/fetch_records`);
       const users = await response.json();
-      updateStatuses(users); 
+      updateMarkers(users);
+      updateStatuses(users);
   } catch (error) {
       console.error("Error fetching data:", error);
   }
+}
+
+function  updateMarkers(users) {
+  Object.entries(users).forEach(([user, coords]) => {
+    const userCoords = [coords.latitude, coords.longitude];
+    if (markers[user]) {
+      markers[user].setLatLng(userCoords);
+    } else {
+      markers[user] = L.marker(userCoords).addTo(map)
+        .bindPopup(`<b>${user}</b><br>Location Updated`);
+    }
+  });
+}
+
+function initializeStreetView() {
+  console.log("Initializing Street View...");
+
+  const panoElement = document.getElementById("pano");
+  if (!panoElement) {
+      console.error("Error: 'pano' div not found!");
+      return;
+  }
+
+  const location = { lat: 37.7749, lng: -122.4194 };
+
+  panorama = new google.maps.StreetViewPanorama(panoElement, {
+      position: location,
+      pov: { heading: 34, pitch: 10 },
+      visible: true
+  });
+
+  panorama.addListener("status_changed", () => {
+      console.log("Street View Status:", panorama.getStatus());
+  });
+
+  console.log("Street View initialized:", panorama);
 }
 
 function updateStatuses(users) {
@@ -25,7 +65,7 @@ function updateStatuses(users) {
       const distance = map.distance(userCoords, homeCoords);
       const isHome = distance <= 100;
 
-
+      const panoElement = document.getElementById("pano");
       const statusElement = document.createElement("div");
       statusElement.classList.add("status-item", isHome? "home" : "away");
       statusElement.innerHTML = `
@@ -35,6 +75,11 @@ function updateStatuses(users) {
 
       statusElement.addEventListener("click", () => {
           map.setView(userCoords, 17);
+          panorama = new google.maps.StreetViewPanorama(panoElement, {
+            position: { lat: userCoords[0], lng: userCoords[1] },
+            pov: { heading: 34, pitch: 10 },
+            visible: true
+          });
       });
 
       // Append to status container
@@ -76,23 +121,32 @@ function toggleMenu() {
   }, 200);
 }
 
+function loadGoogleMapsAPI() {
+  if (!apiKey) {
+    console.error("API key is missing.");
+    return;
+  }
+
+  // Remove existing script to avoid duplicates
+  const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+  if (existingScript) existingScript.remove();
+
+  const script = document.createElement("script");
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initializeStreetView&v=weekly&loading=async`;
+  script.async = true;
+  script.defer = true;
+  document.head.appendChild(script);
+}
+
 $(document).ready(function() {
   $('#view-selector .panel-list-item').on('click', function(event) {
-    event.preventDefault(); // Prevent default link behavior
-
-    // Remove active class from all items
+    event.preventDefault();
     $('#view-selector .panel-list-item').removeClass('active-link');
-    // Add active class to the clicked item
     $(this).addClass('active-link');
 
-    // Get the view to show
     const viewToShow = $(this).data('view');
-
-    // Hide all view panels
     $('.view-panel').addClass('hidden');
     $('.label').addClass('hidden');
-
-    // Show the selected view panel
     $('#' + viewToShow).removeClass('hidden');
 
     if (viewToShow === 'map') {
@@ -112,15 +166,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const streetViewButton = document.querySelector('[data-view="street"]');
 
-
+  if (streetViewButton) {
+    streetViewButton.addEventListener("click", () => {
+      loadGoogleMapsAPI();
+    });
+  }
   const viewSelector = document.getElementById('view-selector');
   if (viewSelector) {
     viewSelector.addEventListener('click', (event) => {
       const li = event.target.closest('.panel-list-item');
       if (!li) return;
 
-      // data-view attribute from your <li data-view="map"> etc.
       const viewName = li.getAttribute('data-view');
       if (!viewName) return;
 
