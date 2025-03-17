@@ -27,7 +27,7 @@ function updateStatuses(users) {
 
 
       const statusElement = document.createElement("div");
-      statusElement.classList.add("status-item");
+      statusElement.classList.add("status-item", isHome? "home" : "away");
       statusElement.innerHTML = `
           <span class="status-name">${user}</span>
           <span class="status-text ${isHome ? "home" : "away"}">${isHome ? "Home" : "Away"}</span>
@@ -71,7 +71,39 @@ setInterval(fetchAndUpdate, 5000);
 
 function toggleMenu() {
   document.body.classList.toggle('nav-active');
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 200);
 }
+
+$(document).ready(function() {
+  $('#view-selector .panel-list-item').on('click', function(event) {
+    event.preventDefault(); // Prevent default link behavior
+
+    // Remove active class from all items
+    $('#view-selector .panel-list-item').removeClass('active-link');
+    // Add active class to the clicked item
+    $(this).addClass('active-link');
+
+    // Get the view to show
+    const viewToShow = $(this).data('view');
+
+    // Hide all view panels
+    $('.view-panel').addClass('hidden');
+    $('.label').addClass('hidden');
+
+    // Show the selected view panel
+    $('#' + viewToShow).removeClass('hidden');
+
+    if (viewToShow === 'map') {
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 200);
+    }
+  });
+});
+
+
 document.addEventListener('DOMContentLoaded', () => {
   const menuWrap = document.querySelector('.nav-but-wrap');
   if (menuWrap) {
@@ -79,6 +111,41 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleMenu();
     });
   }
+
+
+
+  const viewSelector = document.getElementById('view-selector');
+  if (viewSelector) {
+    viewSelector.addEventListener('click', (event) => {
+      const li = event.target.closest('.panel-list-item');
+      if (!li) return;
+
+      // data-view attribute from your <li data-view="map"> etc.
+      const viewName = li.getAttribute('data-view');
+      if (!viewName) return;
+
+      // Optionally mark selected link as "active-link"
+      document.querySelectorAll('.panel-list-item').forEach((item) => {
+        item.classList.remove('active-link');
+      });
+      li.classList.add('active-link');
+
+      // Hide all center panels
+      document.querySelectorAll('.view-panel').forEach((panel) => {
+        panel.style.display = 'none';
+      });
+
+      // Show only the chosen one
+      const newActive = document.getElementById(viewName);
+      if (newActive) {
+        newActive.style.display = 'block';
+      }
+
+      // Stop the link from actually navigating (if using <a>)
+      event.preventDefault();
+    });
+  }
+
 });
 
 (function($) {
