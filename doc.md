@@ -143,7 +143,7 @@ Refactored get_coords & get_addr**
        ```
   4. Run the shortcut periodically or on demand to keep the database updated with live location data.
 
----
+--
 
 ## 8.0 | Future Improvements
 #### 8.1 Handling Multiple Users
