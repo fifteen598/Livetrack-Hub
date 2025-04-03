@@ -2,9 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>LiveTrack needs your location in the background to continue tracking your position for your family.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>LiveTrack needs your location in the background to continue tracking your position for your family.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>LiveTrack needs your location to track and share your position with your family.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<string>bluetooth-peripheral</string>
 	</array>
 </dict>
 </plist>

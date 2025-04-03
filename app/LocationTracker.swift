@@ -4,10 +4,14 @@ import SwiftUI
 
 // Location Sharing Service
 class LocationSharingService {
-    private let serverURL = "http://SERVER_IP:5000/update_location"
-    private let userName = "NAME" // Replace with your name
+    private let serverURL = "https://fifteen598.pythonanywhere.com/update_location"
     
-    func shareLocation(_ location: CLLocation) {
+    func shareLocation(_ location: CLLocation, userName: String, isDemoMode: Bool) {
+        if isDemoMode {
+            print("DEMO MODE: Location would be sent for \(userName): \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            return
+        }
+        
         let locationData = [
             "name": userName,
             "latitude": location.coordinate.latitude,
@@ -36,7 +40,7 @@ class LocationSharingService {
             }
             
             if let httpResponse = response as? HTTPURLResponse {
-                print("Flask server response: \(httpResponse.statusCode)")
+                print("Server response: \(httpResponse.statusCode)")
             }
         }.resume()
     }
@@ -47,6 +51,8 @@ class LocationTracker: NSObject, ObservableObject {
     @Published var locations: [CLLocation] = []
     @Published var lastLocation: CLLocation?
     @Published var isTracking = false
+    @Published var isDemoMode = false
+    @Published var userName: String = UserDefaults.standard.string(forKey: "userName") ?? "USER"
     
     private let locationManager = CLLocationManager()
     private let sharingService = LocationSharingService()
@@ -66,38 +72,87 @@ class LocationTracker: NSObject, ObservableObject {
     }
     
     func startTracking() {
-        locationManager.requestAlwaysAuthorization()
         isTracking = true
+        
+        // Clear locations when starting new tracking session
+        locations.removeAll()
+        
+        let authStatus = locationManager.authorizationStatus
+        if authStatus == .notDetermined {
+            locationManager.requestAlwaysAuthorization()
+        } else if authStatus == .authorizedWhenInUse || authStatus == .authorizedAlways {
+            locationManager.startUpdatingLocation()
+        } else {
+            // Show alert or handle denied/restricted permissions
+            print("Location permission denied or restricted")
+        }
     }
     
     func stopTracking() {
         locationManager.stopUpdatingLocation()
         isTracking = false
     }
+    
+    func clearLocationHistory() {
+        locations.removeAll()
+    }
+    
+    // Function to generate a simulated location for demo mode
+    func simulateLocationUpdate() {
+        guard isTracking && isDemoMode else { return }
+        
+        // Create a random location near Wichita State University
+        let baseLatitude = 37.7178
+        let baseLongitude = -97.2921
+        
+        let randomLatOffset = Double.random(in: -0.005...0.005)
+        let randomLongOffset = Double.random(in: -0.005...0.005)
+        
+        let simulatedLocation = CLLocation(
+            coordinate: CLLocationCoordinate2D(
+                latitude: baseLatitude + randomLatOffset,
+                longitude: baseLongitude + randomLongOffset
+            ),
+            altitude: Double.random(in: 400...450),
+            horizontalAccuracy: 10,
+            verticalAccuracy: 10,
+            timestamp: Date()
+        )
+        
+        // Process the simulated location
+        self.lastLocation = simulatedLocation
+        self.locations.append(simulatedLocation)
+        
+        // Share the simulated location
+        sharingService.shareLocation(simulatedLocation, userName: userName, isDemoMode: isDemoMode)
+    }
 }
 
 extension LocationTracker: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
+        guard !isDemoMode, let location = locations.last else { return }
+        
         self.lastLocation = location
         self.locations.append(location)
         
-        // Send location to Flask server
-        sharingService.shareLocation(location)
+        // Send location to server
+        sharingService.shareLocation(location, userName: userName, isDemoMode: isDemoMode)
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error: \(error)")
+        print("Location error: \(error.localizedDescription)")
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
-        case .authorizedAlways:
-            locationManager.startUpdatingLocation()
-        case .authorizedWhenInUse:
+        case .authorizedAlways, .authorizedWhenInUse:
+            if isTracking {
+                locationManager.startUpdatingLocation()
+            }
+        case .notDetermined:
             locationManager.requestAlwaysAuthorization()
-        case .notDetermined, .restricted, .denied:
-            print("Location access not granted")
+        case .restricted, .denied:
+            print("Location access restricted or denied")
         @unknown default:
             break
         }

@@ -4,20 +4,42 @@ import CoreLocation
 
 struct ContentView: View {
     @StateObject private var locationTracker = LocationTracker()
+    @State private var showingNamePrompt = false
+    @State private var lastUpdateTime: Date?
+    @State private var demoTimer: Timer?
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 // Status Card
                 VStack(spacing: 16) {
+                    // Tracking Status
                     HStack {
                         Image(systemName: locationTracker.isTracking ? "location.fill" : "location.slash.fill")
                             .foregroundColor(locationTracker.isTracking ? .green : .red)
                         Text(locationTracker.isTracking ? "Tracking Active" : "Tracking Inactive")
                             .font(.headline)
+                        
+                        if locationTracker.isDemoMode {
+                            Text("(Demo)")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                                .padding(.leading, 4)
+                        }
+                        
+                        Spacer()
+                        
+                        // Demo mode toggle
+                        Toggle("", isOn: $locationTracker.isDemoMode)
+                            .labelsHidden()
+                            .onChange(of: locationTracker.isDemoMode) { oldValue, newValue in
+                                if locationTracker.isTracking {
+                                    stopTracking()
+                                    startTracking()
+                                }
+                            }
                     }
                     .padding()
-                    .frame(maxWidth: .infinity)
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(10)
                     
@@ -29,10 +51,6 @@ struct ContentView: View {
                             
                             LocationDataRow(title: "Latitude", value: location.coordinate.latitude)
                             LocationDataRow(title: "Longitude", value: location.coordinate.longitude)
-                            LocationDataRow(title: "Altitude", value: location.altitude, unit: "m")
-                            if location.speed >= 0 {
-                                LocationDataRow(title: "Speed", value: location.speed, unit: "m/s")
-                            }
                         }
                         .padding()
                         .background(Color.blue.opacity(0.1))
@@ -40,45 +58,126 @@ struct ContentView: View {
                     } else {
                         Text("Waiting for location...")
                             .foregroundColor(.gray)
+                            .frame(height: 100)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(10)
                     }
                     
-                    // Control Button
-                    Button(action: {
-                        if locationTracker.isTracking {
-                            locationTracker.stopTracking()
-                        } else {
-                            locationTracker.startTracking()
+                    // Control Buttons
+                    HStack(spacing: 16) {
+                        // Start/Stop Button
+                        Button(action: {
+                            if locationTracker.isTracking {
+                                stopTracking()
+                            } else {
+                                startTracking()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: locationTracker.isTracking ? "stop.fill" : "play.fill")
+                                Text(locationTracker.isTracking ? "Stop" : "Start")
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(locationTracker.isTracking ? Color.red : Color.green)
+                            .cornerRadius(10)
                         }
-                    }) {
-                        HStack {
-                            Image(systemName: locationTracker.isTracking ? "stop.fill" : "play.fill")
-                            Text(locationTracker.isTracking ? "Stop Tracking" : "Start Tracking")
+                        
+                        // Reset Button
+                        Button(action: {
+                            locationTracker.clearLocationHistory()
+                        }) {
+                            HStack {
+                                Image(systemName: "arrow.counterclockwise")
+                                Text("Reset")
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray)
+                            .cornerRadius(10)
                         }
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(locationTracker.isTracking ? Color.red : Color.green)
-                        .cornerRadius(10)
                     }
                 }
-                .padding()
+                .padding(.horizontal)
                 
-                // Location History
-                if !locationTracker.locations.isEmpty {
-                    List {
-                        ForEach(locationTracker.locations.indices, id: \.self) { index in
-                            LocationHistoryRow(location: locationTracker.locations[index], index: index)
+                // Location History - Apple Stopwatch Style
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Location History")
+                        .font(.headline)
+                        .padding(.horizontal)
+                    
+                    if locationTracker.locations.isEmpty {
+                        Text("No locations recorded")
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 40)
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 0) {
+                                ForEach(locationTracker.locations.indices.reversed(), id: \.self) { index in
+                                    LocationLogRow(
+                                        location: locationTracker.locations[index],
+                                        count: locationTracker.locations.count - index
+                                    )
+                                    
+                                    if index > 0 {
+                                        Divider()
+                                            .padding(.leading, 60)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
                         }
                     }
-                } else {
-                    ContentUnavailableView("No Location History",
-                        systemImage: "location.slash",
-                        description: Text("Start tracking to begin recording locations")
-                    )
                 }
+                .frame(maxHeight: .infinity)
+                .background(Color(.systemBackground))
             }
             .navigationTitle("LiveTrack")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingNamePrompt = true }) {
+                        HStack {
+                            Text(locationTracker.userName)
+                                .font(.subheadline)
+                            Image(systemName: "person.circle")
+                        }
+                    }
+                }
+            }
+            .alert("Enter Your Name", isPresented: $showingNamePrompt) {
+                TextField("Name", text: $locationTracker.userName)
+                Button("Save") {
+                    UserDefaults.standard.set(locationTracker.userName, forKey: "userName")
+                }
+            } message: {
+                Text("This will be sent with your location data")
+            }
+            .onChange(of: locationTracker.lastLocation) { oldValue, newValue in
+                lastUpdateTime = Date()
+            }
         }
+    }
+    
+    private func startTracking() {
+        locationTracker.startTracking()
+        
+        if locationTracker.isDemoMode {
+            demoTimer?.invalidate()
+            demoTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+                locationTracker.simulateLocationUpdate()
+            }
+            locationTracker.simulateLocationUpdate()
+        }
+    }
+    
+    private func stopTracking() {
+        locationTracker.stopTracking()
+        demoTimer?.invalidate()
+        demoTimer = nil
     }
 }
 
@@ -94,33 +193,53 @@ struct LocationDataRow: View {
             Spacer()
             Text(String(format: "%.6f", value) + (unit.isEmpty ? "" : " \(unit)"))
                 .fontWeight(.medium)
+                .monospaced()
         }
     }
 }
 
-struct LocationHistoryRow: View {
+struct LocationLogRow: View {
     let location: CLLocation
-    let index: Int
+    let count: Int
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Location \(index + 1)")
-                .font(.headline)
-            Text("Lat: \(location.coordinate.latitude, specifier: "%.6f")")
-                .foregroundColor(.gray)
-            Text("Long: \(location.coordinate.longitude, specifier: "%.6f")")
-                .foregroundColor(.gray)
-            Text(formatDate(location.timestamp))
-                .font(.caption)
-                .foregroundColor(.blue)
+        HStack(spacing: 16) {
+            // Lap number/count
+            Text("\(count)")
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .frame(width: 40, alignment: .center)
+            
+            // Location details
+            VStack(alignment: .leading, spacing: 2) {
+                Text(formatTime(location.timestamp))
+                    .font(.system(size: 17, weight: .medium))
+                
+                Text("\(location.coordinate.latitude, specifier: "%.5f"), \(location.coordinate.longitude, specifier: "%.5f")")
+                    .font(.system(size: 14, design: .monospaced))
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            // Distance if available
+            if count > 1 {
+                Text(formatDistanceFromPrevious(location, count: count))
+                    .font(.system(size: 15))
+                    .foregroundColor(.secondary)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 10)
     }
     
-    private func formatDate(_ date: Date) -> String {
+    private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .medium
+        formatter.dateFormat = "h:mm:ss a"
         return formatter.string(from: date)
+    }
+    
+    private func formatDistanceFromPrevious(_ location: CLLocation, count: Int) -> String {
+        // This would ideally calculate distance from previous point
+        // For now, just return a placeholder
+        return ""
     }
 }
