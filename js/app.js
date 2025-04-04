@@ -25,7 +25,8 @@ function  updateMarkers(users) {
       markers[user].setLatLng(userCoords);
     } else {
       markers[user] = L.marker(userCoords).addTo(map)
-        .bindPopup(`<b>${user}</b><br>Location Updated`);
+        .bindPopup(`<b>${user}</b><br>Location Updated`)
+        .bindTooltip(user, { permanent: true, direction: "top", offset: [-15, -15]});
     }
   });
 }
@@ -55,7 +56,7 @@ function initializeStreetView() {
 }
 
 function updateStatuses(users) {
-  const homeCoords = [37.72407864223953, -97.1753984504353];
+  const homeCoords = [37.7193945, -97.293656];
   const statusContainer = document.getElementById("status-container");
 
   statusContainer.innerHTML = "";
