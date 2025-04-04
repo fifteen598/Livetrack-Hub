@@ -143,7 +143,7 @@ Refactored get_coords & get_addr**
        ```
   4. Run the shortcut periodically or on demand to keep the database updated with live location data.
 
---
+---
 
 ## 8.0 | Future Improvements
 #### 8.1 Handling Multiple Users
@@ -215,8 +215,48 @@ Refactored get_coords & get_addr**
 
 ---
 
-## 12.0 | Next Steps
+## 12.0 | Refactoring the GUI: From Tkinter to HTML, JS, and CSS
+### 12.1 Why do we need to Refactor?
+- The original GUI was originally built using **TKINTER**, which was good for a basic interface for the functionality of our project. However, it had several limitations:
+  - **Aesthetic Limitations**: Limited design flexibility and modern UI elements. Many assets were not customizable and were required to be hardcoded.
+  - **Scalability**: As the project potentially grows, using Tkinter could limit future features and functionalities.
+  - **Accessibility**: Tkinter is desktop based, so switching to a web-based solution would allow for better accessibility and cross-platform compatibility.
 
-- Add logic for dynamic map centering based on user marker positions.
-- Explore options for enhanced mobile app integration.
-- Investigate geofence-specific notifications to improve real-time user interaction.
+### 12.2 Setting Up the Web Environment
+- I wanted the UI to look relatively similar to the GUI we had previously, so I used the same color scheme and layout as a base.
+- I started by creating a separate directory with the following files:
+  - `index.html`: The main HTML file for the web application.
+  - `style.css`: The CSS file for styling the HTML elements.
+  - `app.js`: The JavaScript file for handling dynamic functionality and API calls.
+- Another big change was that the map itself. Since we were not using TkinterMapView any more, I found a free and open-source library called **Leaflet** that allows for easy integration of maps into web applications. It is lightweight and has a lot of features that can be used to customize the map to our needs.
+
+### 12.3 New Features and Improvements
+
+#### 12.3.1 Concept and Visual Design
+- To enhance the visual appeal of the interface, I really wanted to implement a dynamic moving background. The goal was to create a modern and interactive user experience.
+
+#### 12.3.2 Designing the Background
+- The background consists of **gradient animations** that move dynamically.
+- I used CSS animations and keyframes to create smooth transitions between different gradient colors.
+- Spent a lot of time playing with this to find the most appealing and eye catching visual for the project.
+- The background is set to cover the entire viewport, ensuring a seamless experience across different screen sizes.
+
+--- 
+
+## 13.0 | iOS App Development
+### 13.1 Why do we need to develop an iOS app?
+- The original plan was to use the Shortcuts app to send location data to the server. However, this approach had limitations in terms of customization and user experience. It's also not very user-friendly for non-technical users.
+
+### 13.2 Setting Up the iOS App
+- I used **Xcode** to create a new iOS project. The app is built using **SwiftUI**, which allows for a modern and responsive user interface.
+- The app is designed to run in the background and periodically send location updates to the server.
+- I used the **CoreLocation** framework to access the device's GPS data and send it to the server via HTTP POST requests.
+
+### 13.3 Key Features
+- **Background Location Updates**: The app can run in the background and send location updates even when the app is not actively being used.
+- **User Interface**: The app has a simple and intuitive interface that allows users to start and stop location tracking easily.
+
+### 13.4 Future Improvements
+- Early stages of development, but I plan to add more features to enhance the user experience.
+
+
