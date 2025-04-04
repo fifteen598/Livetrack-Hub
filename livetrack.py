@@ -6,6 +6,7 @@ key = os.getenv('GOOGLE_API')
 
 GEOCODE = "https://maps.googleapis.com/maps/api/geocode/json"
 DISTMATRIX = "https://maps.googleapis.com/maps/api/distancematrix/json"
+address = "Jabara Hall, Wichita State University"
 
 # This function takes address, gets & outputs coordinates
 def get_coords(address): # input address as a string
@@ -77,4 +78,6 @@ def geofence(origin, destination, radius=100):
 # print(get_addr(*c.campus)) # returns address as a string
 
 # print(f'Converting {a.campus} into coordinates: {get_coords(a.campus)}') # returns coordinates as tuple
+
+# print(get_coords(address))
 
