@@ -1,15 +1,14 @@
 from pathlib import Path
-from tkinter import Tk, Canvas, Button, PhotoImage, Label, Entry, Toplevel
+from tkinter import BOTH, StringVar, OptionMenu, Frame, Label, Tk, Canvas, Button, PhotoImage, Entry, Toplevel, SOLID, X, W
 from tkintermapview import TkinterMapView
+from datetime import datetime, timedelta
 import time
 import live_flask
 import threading
 import importlib
 import Coordinates as c
 import livetrack
-
-
-
+import json
 
 class Application:
     def __init__(self, root):
@@ -25,6 +24,7 @@ class Application:
         self.map_widget = TkinterMapView(self.root, width=739, height=619, corner_radius=20)
         self.map_widget.place(x=321, y=152)  # Adjust x and y to place the map widget at the desired location
         self.update_map()
+        self.history_manager = HistoryManager() #history manager
         # self.myx = live_flask.fetch_coordinates('Adrien')[0]
         # self.myy = live_flask.fetch_coordinates('Adrien')[1]
         # self.map_widget.set_position(self.myx, self.myy, 15)
@@ -66,6 +66,8 @@ class Application:
             "button_hover_4": PhotoImage(file=self.relative_to_assets("button_hover_4.png")),
             "button_5": PhotoImage(file=self.relative_to_assets("button_5.png")),
             "button_hover_5": PhotoImage(file=self.relative_to_assets("button_hover_5.png")),
+            "button_6": PhotoImage(file=self.relative_to_assets("button_6.png")), # History_manager - TODO: add button_6.png
+            "button_hover_6": PhotoImage(file=self.relative_to_assets("button_hover_6.png")) # History_manager - TODO: add button_hover_6.png
         }
         for i in range(1, 6):
             self.images[f"isHome_{i}"] = PhotoImage(file=self.relative_to_assets(f"isHome_{i}.png"))
@@ -88,12 +90,14 @@ class Application:
     def create_buttons(self):
         # Creating buttons using a helper method
         buttons_config = [
-            ("button_1", "button_hover_1", (27.0, 259.0, 218.0, 58.0), "Button 1 clicked"),
-            ("button_2", "button_hover_2", (27.0, 367.0, 218.0, 58.0), "Button 2 clicked"),
-            ("button_3", "button_hover_3", (27.0, 473.0, 218.0, 58.0), "Button 3 clicked"),
-            ("button_4", "button_hover_4", (27.0, 579.0, 218.0, 58.0), "Button 4 clicked"),
-            ("button_5", "button_hover_5", (301.0, 811.0, 777.0, 42.0), self.set_geofence)
-        ]
+        ("button_1", "button_hover_1", (27.0, 259.0, 218.0, 58.0), "Button 1 clicked"),
+        ("button_2", "button_hover_2", (27.0, 367.0, 218.0, 58.0), "Button 2 clicked"),
+        ("button_3", "button_hover_3", (27.0, 473.0, 218.0, 58.0), "Button 3 clicked"),
+        ("button_4", "button_hover_4", (27.0, 579.0, 218.0, 58.0), "Button 4 clicked"),
+        ("button_5", "button_hover_5", (301.0, 811.0, 777.0, 42.0), self.set_geofence),
+        ("button_6", "button_hover_6", (27, 685, 218, 58), self.show_history) # History_manager button
+    ]
+        
         for button_name, hover_name, geometry, command_msg in buttons_config:
             self.create_hover_button(button_name, hover_name, geometry, command_msg)
 
@@ -189,6 +193,62 @@ class Application:
 
         self.root.after(5000, self.update_map)
 
+    def show_history(self):
+        history_window = Toplevel(self.root)
+        history_window.title("Location History")
+        history_window.geometry("800x600")
+        
+        time_filter = StringVar(value="24")
+        time_options = {
+            "24": "Last 24 Hours",
+            "168": "Last 7 Days",
+            "720": "Last 30 Days",
+            "all": "All History"
+        }
+
+        OptionMenu(history_window, time_filter, *time_options.keys(), 
+                  command=lambda _: self.update_history_display(history_frame, time_filter.get())).pack(pady=10)
+    
+        # History display frame
+        history_frame = Frame(history_window)
+        history_frame.pack(fill=BOTH, expand=True)
+        self.update_history_display(history_frame, "24")
+
+    def update_history_display(self, frame, hours):
+        for widget in frame.winfo_children():
+            widget.destroy()
+
+        # Time filter
+        time_options = {
+            "24": "Last 24 Hours",
+            "168": "Last 7 Days",
+            "720": "Last 30 Days",
+            "all": "All History"
+        }
+        
+        Label(frame, text=f"Showing {time_options[hours]}", 
+              font=('Arial', 12, 'bold')).pack(pady=(0, 10))
+        
+        history = self.history_manager.get_history(
+            hours=float(hours) if hours != 'all' else 'all'
+        )
+    
+        if not history:
+            Label(frame, text="No history data available").pack()
+            return
+        
+        for entry in history:
+            entry_frame = Frame(frame, bd=1, relief=SOLID, padx=5, pady=5)
+            entry_frame.pack(fill=X)
+        
+            Label(entry_frame, 
+                  text=datetime.fromisoformat(entry['timestamp']).strftime('%Y-%m-%d %H:%M:%S'),
+                  font=('Arial', 10, 'bold')).pack(anchor=W)
+            Label(entry_frame, 
+                  text=f"Lat: {entry['lat']:.6f}, Lng: {entry['lng']:.6f}").pack(anchor=W)
+            Label(entry_frame, 
+                  text=f"Accuracy: {entry['accuracy']:.1f}m").pack(anchor=W)
+
 class UserStatus:
     def __init__(self, canvas, images, y_positions):
         self.canvas = canvas
@@ -211,7 +271,7 @@ class UserStatus:
                 text=f"{user}",
                 font=("Poppins", 14),
                 fill="#FFFFFF",
-                tags="f{user}_label",
+                tags=f"{user}_label",
                 anchor="w"
             )
 

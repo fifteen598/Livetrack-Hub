@@ -1,0 +1,4 @@
+flask==2.0.1
+tkintermapview==1.18
+geopy==2.2.0
+requests==2.26.0
