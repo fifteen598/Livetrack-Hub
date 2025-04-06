@@ -1,4 +1,26 @@
 # Documentation
+## Overview
+Livetrack-Hub is a centralized platform for real-time location tracking services. It provides a hub architecture that connects various tracking devices and applications, enabling seamless real-time location monitoring and data storage.
+
+## Features
+- Real-time location tracking
+- Device management
+- User authentication and authorization
+- Data visualization
+- Historical data storage and retrieval
+- API for third-party integration
+- Notification system for alerts and events
+- Customizable geofencing capabilities
+
+## Requirements
+- Node.js (v14 or higher)
+- MongoDB (v4.4 or higher)
+- Modern web browser with JavaScript enabled
+- Internet connection
+
+
+
+
 
 ## 1.0 | Setting up Raspberry Pi
 #### 1.1 Flash the Raspberry Pi OS onto SD card
