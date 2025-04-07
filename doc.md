@@ -5,19 +5,14 @@ Livetrack-Hub is a centralized platform for real-time location tracking services
 ## Features
 - Real-time location tracking
 - Device management
-- User authentication and authorization
 - Data visualization
 - Historical data storage and retrieval
 - API for third-party integration
-- Notification system for alerts and events
 - Customizable geofencing capabilities
 
 ## Requirements
 - Node.js (v14 or higher)
-- MongoDB (v4.4 or higher)
-- Modern web browser with JavaScript enabled
-- Internet connection
-
+- SQL
 
 
 
