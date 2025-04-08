@@ -12,8 +12,11 @@
 
 ### Geofencing at a Glance
 
-- Uses simple true/false logic to determine whether users are home or away.
-- Functions similarly to a digital wall clock — passive, quick-reference visibility.
+- Define multiple custom zones, each with adjustable radius and behavior.
+- Built-in dwell time logic — can set a duration that users must remain in a zone before a status update occurs.
+- Seamless support for multiple devices per user.
+- Simple status checking for the GUI.
+- Personalized colors for users makes it effortless to see who's home, away, or on the move.
 
 ### Location History
 
