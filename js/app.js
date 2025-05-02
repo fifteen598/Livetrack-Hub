@@ -250,4 +250,41 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
 })(jQuery);
 
+document.getElementById("radius-input").addEventListener("input", (e) => {
+  document.getElementById("radius-value").textContent = e.target.value;
+});
+
+document.getElementById("geofence-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const address = document.getElementById("address-input").value;
+  const radius = parseInt(document.getElementById("radius-input").value);
+
+  try {
+    const response = await fetch(`${API_SERVER}/set_geofence`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address, radius }),
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const data = await response.json();
+    alert("Geofence set successfully!");
+
+    // Optional: Draw circle on map
+    if (window.geofenceCircle) map.removeLayer(window.geofenceCircle);
+    window.geofenceCircle = L.circle([data.lat, data.lng], {
+      color: 'green',
+      fillColor: '#3f3',
+      fillOpacity: 0.2,
+      radius: radius,
+    }).addTo(map);
+
+    map.setView([data.lat, data.lng], 15);
+  } catch (err) {
+    console.error("Error setting geofence:", err);
+    alert("Failed to set geofence.");
+  }
+});
 

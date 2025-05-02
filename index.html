@@ -37,7 +37,11 @@
                     <a href="#">Historical View</a>
                   </li>
                   <li class="panel-list-item" data-view="settings">
+<<<<<<< HEAD
                     <a id="geofence-link" href="#">Set Geofence</a>
+=======
+                    <a href="#">Settings</a>
+>>>>>>> 62879da (Desktop: settings view)
                   </li>
                 </ul>
               </div>
@@ -63,7 +67,22 @@
                 <div id="pano"></div>
               </div>
               <div id="historical" class="view-panel hidden"> ... historical stuff ... </div>
+              <div id="settings" class="view-panel hidden">
+                <h2>Set Geofence</h2>
+                <form id="geofence-form">
+                  <label for="address-input">Address or Place Name:</label>
+                  <input type="text" id="address-input" required placeholder="e.g. Jabara Hall Wichita State University" />
+              
+                  <label for="radius-input">Radius (meters):</label>
+                  <input type="range" id="radius-input" min="10" max="1000" step="10" value="100" />
+                  <span id="radius-value">100</span> meters
+              
+                  <button type="submit">Set Geofence</button>
+                </form>
+              </div>
             </div>
+
+            
     
             <!-- RIGHT: Status -->
             <div class="status-panel">
