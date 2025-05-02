@@ -56,42 +56,55 @@ function initializeStreetView() {
 }
 
 function updateStatuses(users) {
-  const homeCoords = [37.7193945, -97.293656];
-  const statusContainer = document.getElementById("status-container");
+  // Draw or update geofence circle
+  if (geofenceCenter && geofenceRadius) {
+    if (window.geofenceCircle) map.removeLayer(window.geofenceCircle);
+    window.geofenceCircle = L.circle(geofenceCenter, {
+      color: 'green',
+      fillColor: '#3f3',
+      fillOpacity: 0.2,
+      radius: geofenceRadius,
+    }).addTo(map);
+  }
 
+  const statusContainer = document.getElementById("status-container");
   statusContainer.innerHTML = "";
 
   Object.entries(users).forEach(([user, coords]) => {
-      const userCoords = [coords.latitude, coords.longitude];
-      const distance = map.distance(userCoords, homeCoords);
-      const isHome = distance <= 100;
+    const userCoords = [coords.latitude, coords.longitude];
 
-      const panoElement = document.getElementById("pano");
-      const statusElement = document.createElement("div");
-      statusElement.classList.add("status-item", isHome? "home" : "away");
-      statusElement.innerHTML = `
-          <span class="status-name">${user}</span>
-          <span class="status-text ${isHome ? "home" : "away"}">${isHome ? "Home" : "Away"}</span>
-      `;
+    // Determine isHome
+    let isHome = false;
+    if (geofenceCenter) {
+      const distance = map.distance(userCoords, geofenceCenter);
+      isHome = distance <= geofenceRadius;
+    }
 
-      statusElement.addEventListener("click", () => {
-          map.setView(userCoords, 17);
-          panorama = new google.maps.StreetViewPanorama(panoElement, {
-            position: { lat: userCoords[0], lng: userCoords[1] },
-            pov: { heading: 34, pitch: 10 },
-            visible: true
-          });
+    const panoElement = document.getElementById("pano");
+    const statusElement = document.createElement("div");
+    statusElement.classList.add("status-item", isHome ? "home" : "away");
+    statusElement.innerHTML = `
+      <span class="status-name">${user}</span>
+      <span class="status-text ${isHome ? "home" : "away"}">${isHome ? "Home" : "Away"}</span>
+    `;
+
+    statusElement.addEventListener("click", () => {
+      map.setView(userCoords, 17);
+      panorama = new google.maps.StreetViewPanorama(panoElement, {
+        position: { lat: userCoords[0], lng: userCoords[1] },
+        pov: { heading: 34, pitch: 10 },
+        visible: true
       });
+    });
 
-      // Append to status container
-      statusContainer.appendChild(statusElement);
+    statusContainer.appendChild(statusElement);
 
-      // Animate status change
-      setTimeout(() => {
-          statusElement.classList.add("fade-in");
-      }, 100);
+    setTimeout(() => {
+      statusElement.classList.add("fade-in");
+    }, 100);
   });
 }
+
 
 // FUNCTION TO UPDATE LOCATION
 async function updateLocation(name, latitude, longitude) {
@@ -254,37 +267,76 @@ document.getElementById("radius-input").addEventListener("input", (e) => {
   document.getElementById("radius-value").textContent = e.target.value;
 });
 
+let geofenceCenter = null;
+let geofenceRadius = 100;
+
+document.getElementById("radius-input").addEventListener("input", (e) => {
+  document.getElementById("radius-value").textContent = e.target.value;
+});
+
 document.getElementById("geofence-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const address = document.getElementById("address-input").value;
   const radius = parseInt(document.getElementById("radius-input").value);
 
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
   try {
-    const response = await fetch(`${API_SERVER}/set_geofence`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address, radius }),
-    });
-
-    if (!response.ok) throw new Error(await response.text());
-
+    const response = await fetch(url);
     const data = await response.json();
-    alert("Geofence set successfully!");
+    const location = data.results[0]?.geometry?.location;
 
-    // Optional: Draw circle on map
-    if (window.geofenceCircle) map.removeLayer(window.geofenceCircle);
-    window.geofenceCircle = L.circle([data.lat, data.lng], {
-      color: 'green',
-      fillColor: '#3f3',
-      fillOpacity: 0.2,
-      radius: radius,
-    }).addTo(map);
+    if (location) {
+      geofenceCenter = [location.lat, location.lng];
+      geofenceRadius = radius;
 
-    map.setView([data.lat, data.lng], 15);
+      
+      document.querySelectorAll('.view-panel').forEach((panel) => {
+        panel.classList.add('hidden');
+      });
+      document.getElementById('map').classList.remove('hidden');
+      document.querySelector('.label')?.classList.add('hidden');
+
+      
+      setTimeout(() => {
+        
+        document.querySelectorAll('.panel-list-item').forEach((item) => {
+          item.classList.remove('active-link');
+        });
+        document.querySelector('[data-view="map"]').classList.add('active-link');
+      
+        
+        document.querySelectorAll('.view-panel').forEach((panel) => {
+          panel.style.display = 'none';
+        });
+        const mapPanel = document.getElementById('map');
+        if (mapPanel) {
+          mapPanel.style.display = 'block';
+          map.invalidateSize(); 
+        }
+      
+
+        // Draw circle
+        if (window.geofenceCircle) map.removeLayer(window.geofenceCircle);
+        window.geofenceCircle = L.circle(geofenceCenter, {
+          color: 'green',
+          fillColor: '#3f3',
+          fillOpacity: 0.2,
+          radius: radius,
+        }).addTo(map);
+
+        map.setView(geofenceCenter, 15);
+        console.log("Drew geofence at", geofenceCenter, "with radius", radius);
+      }, 200);
+
+      alert("Geofence set locally!");
+    } else {
+      alert("Failed to geocode address.");
+    }
   } catch (err) {
-    console.error("Error setting geofence:", err);
+    console.error("Geocoding error:", err);
     alert("Failed to set geofence.");
   }
 });
+
 
