@@ -93,7 +93,7 @@ function updateStatuses(users) {
   });
 }
 
-
+// FUNCTION TO UPDATE LOCATION
 async function updateLocation(name, latitude, longitude) {
     try {
       const response = await fetch(`${API_SERVER}/update_location`, {
